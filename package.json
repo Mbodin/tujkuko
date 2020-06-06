@@ -1,0 +1,29 @@
+{
+	"name": "tujkuko",
+	"version": "1.0",
+	"description": "A collection of recipes presented as an adventure game",
+	"license": "AGPL-3.0-or-later",
+	"esy": {
+		"build": "dune build --profile release @all",
+		"buildsInSource": "_build"
+	},
+	"scripts": {
+		"clean": "rm -R _build web/main.js web/doc",
+		"doc": "dune build @doc",
+		"server": "./server.sh run"
+	},
+	"dependencies": {
+		"@opam/dune": ">=2.0",
+		"@opam/extlib": "~1.7",
+		"@opam/yojson": "*",
+		"@opam/uutf": "*",
+		"@opam/ppx_deriving": "*",
+		"@opam/lwt_ppx": "*",
+		"@opam/js_of_ocaml": "~3.6.0",
+		"@opam/js_of_ocaml-lwt": "~3.6.0",
+		"@opam/js_of_ocaml-ppx": "*",
+		"@opam/js_of_ocaml-ppx_deriving_json": "*",
+		"@opam/odoc": "*",
+		"ocaml": "~4.9"
+	}
+}

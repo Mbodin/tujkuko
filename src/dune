@@ -1,0 +1,11 @@
+
+(library
+	(public_name tujkuko)
+	(name tujkuko)
+	(libraries extlib yojson lwt uutf)
+	(preprocess (pps lwt_ppx ppx_deriving))
+	(modules_without_implementation recipe)
+	(modes byte))
+
+(env (dev (flags (:standard -w -50))))
+

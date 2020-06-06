@@ -19,7 +19,7 @@ let get_field ctx fld l =
 let read_item = function
   | `String str -> Recipe.Sentence str
   | `Assoc l ->
-    let get_field f = get_field  "read_item" l in
+    let get_field f = get_field "read_item" f l in
     (match get_field "kind" with
      | `String "unit" ->
        let get_int f =
@@ -56,14 +56,14 @@ let from_json =
     | `Assoc l ->
       let info = {
           Recipe.picture = List.assoc_opt "picture" l ;
-          description = read_description (get_field "read" "description" l)
+          description = read_description (get_field "from_json, read" "description" l)
         } in
-      (info, read_t (get_field "read" "next"))
+      (info, read_t (get_field "read" "next" l))
   and read_t = function
   | `String "end" -> Recipe.End
   | `List l -> Recipe.Step (List.map read l)
   (* [`Assoc l], with each key representing a parameter (quantity of ingredients chosen, ingredient chosen, etc.) *)
-  | _ -> failwith "from_json: read_t" in
+  | _ -> failwith "from_json, read_t: unexpected argument" in
   match Yojson.Safe.from_string fileContent with
   | `Assoc l -> read_t (get_field "from_json" "recipes" l)
   | _ -> failwith "from_json: Not an object"
