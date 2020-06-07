@@ -1,4 +1,6 @@
 
+open Libutils
+
 let recode ?encoding src =
   let rec loop d e = match Uutf.decode d with
   | `Uchar _ as u -> ignore (Uutf.encode e u); loop d e
@@ -91,4 +93,29 @@ let from_json fileContent =
   match Yojson.Safe.from_string fileContent with
   | `Assoc l -> read_t (get_field "from_json" "recipes" l)
   | _ -> failwith "from_json: not an object"
+
+
+let import_translations fileName fileContent =
+  match Yojson.Safe.from_string ~fname:fileName fileContent with
+  | `List l ->
+    Utils.list_fold_lefti (fun i (t, lgs) ->
+        let current =
+          "The " ^ string_of_int (1 + i) ^ "th element"
+          ^ " of the file `" ^ fileName ^ "'" in function
+        | `Assoc l ->
+          let errorKey key =
+            failwith (current ^ " associates the field `" ^ key
+                      ^ "' to something else than a string.") in
+          let lg =
+            try match List.assoc "iso639" l with
+                | `String lg -> lg
+                | _ -> errorKey "iso639"
+            with Not_found ->
+              failwith (current ^ " has no key `iso639'.") in
+          (List.fold_left (fun t -> function
+            | key, `String str -> PMap.add (key, lg) str t
+            | (key, _) -> errorKey key) t l, lg :: lgs)
+        | _ ->
+          failwith (current ^ " is not an object.")) (PMap.empty, []) l
+  | _ -> failwith ("The file `" ^ fileName ^ "' is not a list.")
 
