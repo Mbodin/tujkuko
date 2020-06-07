@@ -12,8 +12,9 @@ type munit = {
 (** A step is a list of items. *)
 type item =
   | Sentence of string (** A string that will be displayed as-is. *)
-  | Unit of int * int * munit (** An expected quantity, with a minimum and maximal values
-                                 (which can be equal), and a unit. *)
+  | Unit of float * float * munit option
+    (** An expected quantity, with a minimum and maximal values
+      (which can be equal), and an optional unit. *)
   (* LATER: timers, menu lists, links to OpenFoodFacts, etc. *)
 
 type step = item list
@@ -21,9 +22,11 @@ type step = item list
 (** Information that can be stored at any point of the step. *)
 type info = {
     picture : string option
-    (** An optional picture of the step. *) ;
+      (** An optional picture of the step. *) ;
     description : (language, step) PMap.t
-    (** For each language, a description of the step. *)
+      (** For each language, a description of the step. *) ;
+    hints : (language, step list) PMap.t
+      (** For each language, a list of hints. *) ;
   }
 
 (** The main type: a tree with all the recipes.

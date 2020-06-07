@@ -12,34 +12,43 @@ let recode ?encoding src =
   loop d e ;
   Buffer.contents dst
 
-let get_field ctx fld l =
+let get_field ctx fld l : Yojson.Safe.t =
   try List.assoc fld l
   with Not_found -> failwith (ctx ^ ", get_field: Missing field " ^ fld)
+
+let get_field_string ctx fld l =
+  match get_field (ctx ^ ", get_field_string") fld l with
+  | `String str -> str
+  | _ -> failwith (ctx ^ ", get_field_string: not a string")
+
+
+let get_field_float ctx fld l =
+  match get_field (ctx ^ ", get_field_float") fld l with
+  | `Int i -> float_of_int i
+  | `Float f -> f
+  | _ -> failwith (ctx ^ ", get_field_float: not a number")
+
+let get_field_bool ctx fld l =
+  match get_field (ctx ^ ", get_field_bool") fld l with
+  | `Bool b -> b
+  | _ -> failwith (ctx ^ ", get_field_bool: not a boolean")
+
+let read_unit l =
+  if get_field_bool "read_unit" "unit" l then
+    Some {
+        Recipe.munit_notation = get_field_string "read_unit" "notation" l ;
+        Recipe.munit_metric = get_field_bool "read_unit" "metric" l
+      }
+  else None
 
 let read_item = function
   | `String str -> Recipe.Sentence str
   | `Assoc l ->
-    let get_field f = get_field "read_item" f l in
-    (match get_field "kind" with
-     | `String "unit" ->
-       let get_int f =
-         match get_field f with
-         | `Int i -> i
-         | _ -> failwith "read_item, get_int: expecting an integer" in
-       Recipe.Unit (get_int "min", get_int "max", {
-           munit_notation =
-             (match get_field "notation" with
-              | `String u -> u
-              | _ -> failwith "get_item: notation not a string") ;
-           munit_metric =
-             (match get_field "metric" with
-              | `String "yes" -> true
-              | `String "no" -> false
-              | `String m -> failwith ("get_item: unknown metric value: " ^ m)
-              | _ -> failwith "get_item: metric not a string") ;
-         })
-     | `String str -> failwith ("read_item: unknown kind: " ^ str)
-     | _ -> failwith "read_item: kind not a string")
+    (match get_field_string "read_item" "kind" l with
+     | "unit" ->
+       let get_field_float f = get_field_float "read_item" f l in
+       Recipe.Unit (get_field_float "min", get_field_float "max", read_unit l)
+     | str -> failwith ("read_item: unknown kind: " ^ str))
   | _ -> failwith "read_item: unexpected argument"
 
 let read_step = function
@@ -51,14 +60,29 @@ let read_description = function
     List.fold_left (fun m (lg, s) -> PMap.add lg (read_step s) m) PMap.empty l
   | _ -> failwith "read_description: expecting an object"
 
-let from_json =
+let read_hints = function
+  | `Assoc l ->
+    List.fold_left (fun m (lg, h) ->
+      match h with
+      | `List l ->
+        PMap.add lg (List.map read_step l) m
+      | _ -> failwith "read_hints: expecting a list") PMap.empty l
+  | _ -> failwith "read_hints: expecting an object"
+
+let from_json fileContent =
+  let fileContent = recode fileContent in
   let rec read = function
     | `Assoc l ->
       let info = {
-          Recipe.picture = List.assoc_opt "picture" l ;
-          description = read_description (get_field "from_json, read" "description" l)
+          Recipe.picture =
+            Option.map (function
+              | `String a -> a
+              | _ -> failwith "read: expected a string") (List.assoc_opt "picture" l) ;
+          description = read_description (get_field "from_json, read" "description" l) ;
+          hints = read_hints (get_field "from_json, read" "hints" l) ;
         } in
       (info, read_t (get_field "read" "next" l))
+    | _ -> failwith "read: not an object"
   and read_t = function
   | `String "end" -> Recipe.End
   | `List l -> Recipe.Step (List.map read l)
@@ -66,5 +90,5 @@ let from_json =
   | _ -> failwith "from_json, read_t: unexpected argument" in
   match Yojson.Safe.from_string fileContent with
   | `Assoc l -> read_t (get_field "from_json" "recipes" l)
-  | _ -> failwith "from_json: Not an object"
+  | _ -> failwith "from_json: not an object"
 
