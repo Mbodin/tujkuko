@@ -2,8 +2,8 @@
 (library
 	(public_name tujkuko)
 	(name tujkuko)
-	(libraries extlib yojson lwt uutf)
-	(preprocess (pps lwt_ppx ppx_deriving))
+	(libraries libutils extlib yojson lwt uutf re)
+	(preprocess (pps lwt_ppx ppx_deriving ppx_inline_test))
 	(modules_without_implementation recipe)
 	(modes byte))
 

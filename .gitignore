@@ -6,9 +6,15 @@
 /_build
 /_esy
 /node_modules
+
 *.merlin
 *.byte
 *.native
 *.exe
 *.js
+
+web/main.js
+web/translations.json
+web/doc
+web/data
 

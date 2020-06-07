@@ -19,7 +19,7 @@ Once install, compile the project with `esy`:
 esy
 ```
 
-To locally run the web interface (available at [this address](https://mbodin.github.io/murder-generator/)), you need to set up a local server.
+To locally run the web interface (available at [this address](https://mbodin.github.io/tujkuko/)), you need to set up a local server.
 This README does not aim at explaining how to set it up; if you are using Github, you can push these changes online and access the corresponding [github.io](https://github.io) address.
 If you have Python 2 installed, typing `esy server` will set up a local server: accessing `localhost:8000` should open the website.
 
