@@ -10,6 +10,7 @@
 	"scripts": {
 		"clean": "rm -R _build web/main.js web/doc",
 		"doc": "dune build @doc",
+		"test": "dune runtest",
 		"server": "./server.sh run"
 	},
 	"dependencies": {

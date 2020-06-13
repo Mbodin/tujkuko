@@ -381,3 +381,26 @@ button.autocomplete-close {
   background-color: #75507b ;
 }
 
+
+/* Specific classes */
+
+.hint {
+  background-color: #729fcf ;
+  background-image: url(icons/tool/bulb01.svg) ;
+  background-position: 9px 0px ;
+  background-repeat: no-repeat ;
+  border: solid 2px #3465a4 ;
+  border-radius: 5px ;
+  padding: 15px 60px ;
+}
+
+.step {
+  background-color: #e9b96e ;
+  background-image: url(icons/key/key04.svg) ;
+  background-position: 9px 0px ;
+  background-repeat: no-repeat ;
+  border: solid 2px #c17d11 ;
+  border-radius: 5px ;
+  padding: 15px 60px ;
+}
+

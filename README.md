@@ -14,7 +14,7 @@ One way to install `esy` is through npm:
 npm install --global esy
 ```
 
-Once install, compile the project with `esy`:
+Once installed, compile the project with `esy`:
 ```bash
 esy
 ```

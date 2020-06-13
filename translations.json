@@ -1,14 +1,17 @@
 [
 	{
 		"iso639": "eo",
-		"name": "Esperanto"
+		"name": "Esperanto",
+		"missing": "Mankanta traduko:"
 	},
 	{
 		"iso639": "fr",
-		"name": "Français"
+		"name": "Français",
+		"missing": "Traduction manquante :"
 	},
 	{
 		"iso639": "en",
-		"name": "English"
+		"name": "English",
+		"missing": "Missing translation:"
 	}
 ]

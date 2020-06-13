@@ -5,7 +5,8 @@
 	(libraries libutils extlib yojson lwt uutf re)
 	(preprocess (pps lwt_ppx ppx_deriving ppx_inline_test))
 	(modules_without_implementation recipe)
-	(modes byte))
+	(inline_tests)
+	(modes byte native))
 
 (env (dev (flags (:standard -w -50))))
 

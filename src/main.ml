@@ -65,6 +65,10 @@ let main =
       | None ->
         let missing = get_translation_language_direct lg "missing" in
         "<" ^ missing ^ " `" ^ key ^ "'>" in
+    (** We request the recipes without forcing it yet. *)
+    let recipes =
+      let%lwt file = IO.get_file "data/recipes.json" in
+      Lwt.return (Import.from_json file) in
 
     let rec ask_for_languages _ =
       (** Showing to the user all available languages. *)
@@ -92,6 +96,7 @@ let main =
     and start (cont, w) lg =
       let get_translation = get_translation lg in
       IO.set_parameters [(urltag_lang, lg)] ;
+      let%lwt recipes = recipes in
       IO.stopLoading () ;%lwt
       IO.print_block (InOut.P [InOut.Text "TODO"]) ;
 (* TODO
