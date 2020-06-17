@@ -75,7 +75,6 @@ let main =
       add_trace "ask_for_languages" ;
       IO.set_parameters [] ;
       errorTranslations := errorTranslationsDefault ;
-      IO.stopLoading () ;%lwt
       let%lwt language =
         let (cont, w) = Lwt.task () in
         IO.print_block (InOut.Div (InOut.Normal, List.map (fun lg ->
@@ -91,13 +90,27 @@ let main =
                 Lwt.wakeup_later w lg) ]])) languages)) ;
         IO.stopLoading () ;%lwt
         cont in
-      start (Lwt.task ()) language
+      start language
 
-    and start (cont, w) lg =
+    and start lg =
+      add_trace "start" ;
+      let (cont, w) = Lwt.task () in
       let get_translation = get_translation lg in
       IO.set_parameters [(urltag_lang, lg)] ;
       let%lwt recipes = recipes in
       IO.stopLoading () ;%lwt
+      IO.print_block (InOut.Div (InOut.Centered, [
+          InOut.LinkContinuation (false, Button false,
+            get_translation "backToLanguages",
+            (fun _ ->
+              IO.clear_response () ;
+              Lwt.wakeup_later w ask_for_languages))
+        ])) ;
+      IO.print_block (InOut.P [
+          InOut.Text (get_translation "welcome") ;
+          InOut.Text (get_translation "free") ;
+          InOut.LinkExtern (InOut.Simple, get_translation "there", webpage_link) ;
+        ]) ;
       IO.print_block (InOut.P [InOut.Text "TODO"]) ;
 (* TODO
 (** Given a language, explore a [Recipe.t]. *)
@@ -106,7 +119,7 @@ let explore lg t =
   (** Print picture if any. *)
   ???
 *)
-      Lwt.return () in
+      let%lwt cont = cont in cont () in
 
     (** Setting the environment. *)
     let arguments = IO.get_parameters () in
@@ -118,8 +131,8 @@ let explore lg t =
         | None -> None (** Invalid language. *)
         | Some _ -> Some lg in
     match lg with
-    | None -> ask_for_languages (Lwt.task ())
-    | Some lg -> start (Lwt.task ()) lg
+    | None -> ask_for_languages ()
+    | Some lg -> start lg
 
   (** Reporting errors. *)
   with e ->
