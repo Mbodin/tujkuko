@@ -77,9 +77,9 @@ let main =
       errorTranslations := errorTranslationsDefault ;
       let%lwt language =
         let (cont, w) = Lwt.task () in
-        IO.print_block (InOut.Div (InOut.Normal, List.map (fun lg ->
+        IO.print_block (InOut.Div (InOut.Normal, [], List.map (fun lg ->
           let get_translation = get_translation lg in
-          InOut.Div (InOut.Centered, [
+          InOut.Div (InOut.Centered, [], [
             InOut.P [ InOut.LinkContinuation (true, InOut.Button true, get_translation "name",
               fun _ ->
                 IO.clear_response () ;
@@ -99,7 +99,7 @@ let main =
       IO.set_parameters [(urltag_lang, lg)] ;
       let%lwt recipes = recipes in
       IO.stopLoading () ;%lwt
-      IO.print_block (InOut.Div (InOut.Centered, [
+      IO.print_block (InOut.Div (InOut.Centered, [], [
           InOut.LinkContinuation (false, Button false,
             get_translation "backToLanguages",
             (fun _ ->
@@ -111,14 +111,21 @@ let main =
           InOut.Text (get_translation "free") ;
           InOut.LinkExtern (InOut.Simple, get_translation "there", webpage_link) ;
         ]) ;
-      IO.print_block (InOut.P [InOut.Text "TODO"]) ;
-(* TODO
-(** Given a language, explore a [Recipe.t]. *)
-let explore lg t =
-  let i = get_info t in
-  (** Print picture if any. *)
-  ???
-*)
+      (** The node storing all the steps that were done until now. *)
+      let (past, add_past) = IO.extendableList () in
+      IO.print_block (InOut.Div (InOut.Normal, ["history"], [ InOut.P [InOut.Node past] ])) ;
+      (** The node storing the next possible steps. *)
+      let (next, update_next) = IO.controlableNode (IO.block_node InOut.Space) in
+      IO.print_block (InOut.Div (InOut.Normal, ["future"], [ InOut.P [InOut.Node next] ])) ;
+      (** Given a language, explore a [Recipe.t]. *)
+      let explore state =
+        match Navigation.next state with
+        | None -> () (* TODO: We’ve reached the end. *)
+        | Some l ->
+          (* TODO: Print picture if any. *)
+          update_next (IO.block_node (InOut.List (true,
+            List.map (fun (i, st) -> InOut.Space (* TODO *)) l))) in
+      explore (Navigation.init recipes) ;
       let%lwt cont = cont in cont () in
 
     (** Setting the environment. *)
@@ -132,13 +139,13 @@ let explore lg t =
         | Some _ -> Some lg in
     match lg with
     | None -> ask_for_languages ()
-    | Some lg -> start lg
+    | Some lg -> start lg (* LATER: Being able to remember in which step we were in a recipe. *)
 
   (** Reporting errors. *)
   with e ->
     try%lwt
       let (errorOccurred, reportIt, there, errorDetails) = !errorTranslations in
-      IO.print_block ~error:true (InOut.Div (InOut.Normal, [
+      IO.print_block ~error:true (InOut.Div (InOut.Normal, [], [
           InOut.P [
               InOut.Text errorOccurred ; InOut.Text reportIt ;
               InOut.LinkExtern (InOut.Simple, there, webpage_issues)

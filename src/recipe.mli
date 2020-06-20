@@ -35,4 +35,6 @@ type info = {
 type t =
   | End (* LATER: Additional informations? Like calories, number of people, etc. *)
   | Step of (info * t) list
+  (* LATER: | Parallel of t list * t (** A list of recipes to be done before what follows *) *)
+(* Alternatively, do we want to switch to a graph? Or a rule-based formalism? *)
 
