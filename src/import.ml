@@ -95,9 +95,11 @@ let from_json fileContent =
   | _ -> failwith "from_json: not an object"
 
 let%test _ =
-  let file = Std.input_file "data/recipes.json" in
+  let file = Std.input_file "../data/recipes.json" in
+  let file = Yojson.Safe.compact file in
   let recipes = from_json file in
   let file' = Export.to_json recipes in
+  let file' = Yojson.Safe.compact file' in
   file = file'
 
 let import_translations fileName fileContent =

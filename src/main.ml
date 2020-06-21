@@ -127,8 +127,13 @@ let main =
           | Recipe.Unit (min, max, u) ->
             ignore (min, max, u) ; InOut.Text "" (* TODO *) in
         IO.block_node (InOut.P (List.map item_to_block s)) in
+      (** The stack of items in the past list, expressed as:
+       - an identifier,
+       - a function to remove the said element. *)
+      let stack = ref [] in
+      let id = Id.new_id_function () in
       (** Given a language, explore a [Recipe.t]. *)
-      let explore state = (* TODO: Some notion of “factor” to multiply each units. *)
+      let rec explore state = (* TODO: Some notion of “factor” to multiply each units. *)
         match Navigation.next state with
         | None -> () (* TODO: We’ve reached the end. *)
         | Some l ->
@@ -144,7 +149,27 @@ let main =
                 let n =
                   let inter = IO.clickableNode n in
                   inter.IO.onChange (fun _ ->
-                      ignore (st, add_past) (* TODO: this item has been clicked. *)
+                      (** The user has chosen this step. *)
+                      update_next (IO.block_node InOut.Space) ;
+                      let idp = id () in
+                      let p = step_to_node s in
+                      let p = IO.clickableNode p in
+                      let remove_p = add_past p.IO.node in
+                      stack := (idp, remove_p) :: !stack ;
+                      p.IO.onChange (fun _ ->
+                        (** The user wants to go back to this step. *)
+                        update_next (IO.block_node InOut.Space) ;
+                        let rec aux = function
+                          | [] -> assert false
+                          | ((id', remove) :: l) as a ->
+                            if id' = idp then a
+                            else (
+                              remove () ;
+                              aux l
+                            ) in
+                        stack := aux !stack ;
+                        explore st) ;
+                      explore st
                     ) ;
                   inter.IO.node in
                 Some (InOut.Node n)) l))) in

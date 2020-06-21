@@ -1,4 +1,27 @@
 {
-	"recipes": []
+	"recipes": [
+		{
+			"description": {
+					"eo": ["A"]
+				},
+			"hints": {},
+			"next": [
+				{
+					"description": {
+						"eo": ["C"]
+					},
+					"hints": {},
+					"next": []
+				}
+				]
+		},
+		{
+			"description": {
+					"eo": ["B"]
+				},
+			"hints": {},
+			"next": []
+		}
+	]
 }
 
