@@ -404,3 +404,11 @@ button.autocomplete-close {
   padding: 15px 60px ;
 }
 
+.clickable {
+  cursor: pointer ;
+}
+
+.clickable.locked {
+	cursor: not-allowed ;
+}
+

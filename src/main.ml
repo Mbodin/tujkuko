@@ -113,18 +113,41 @@ let main =
         ]) ;
       (** The node storing all the steps that were done until now. *)
       let (past, add_past) = IO.extendableList () in
-      IO.print_block (InOut.Div (InOut.Normal, ["history"], [ InOut.P [InOut.Node past] ])) ;
+      IO.print_block ~kind:InOut.RawResponse
+        (InOut.Div (InOut.Normal, ["history"], [ InOut.Node past ])) ;
+      (* TODO: A node for recipe hints. *)
       (** The node storing the next possible steps. *)
       let (next, update_next) = IO.controlableNode (IO.block_node InOut.Space) in
-      IO.print_block (InOut.Div (InOut.Normal, ["future"], [ InOut.P [InOut.Node next] ])) ;
+      IO.print_block  ~kind:InOut.RawResponse
+        (InOut.Div (InOut.Normal, ["future"], [ InOut.Node next ])) ;
+      (** Generate a node given a [Recipe.step]. *)
+      let step_to_node s =
+        let item_to_block = function
+          | Recipe.Sentence str -> InOut.Text str
+          | Recipe.Unit (min, max, u) ->
+            ignore (min, max, u) ; InOut.Text "" (* TODO *) in
+        IO.block_node (InOut.P (List.map item_to_block s)) in
       (** Given a language, explore a [Recipe.t]. *)
-      let explore state =
+      let explore state = (* TODO: Some notion of “factor” to multiply each units. *)
         match Navigation.next state with
         | None -> () (* TODO: We’ve reached the end. *)
         | Some l ->
-          (* TODO: Print picture if any. *)
-          update_next (IO.block_node (InOut.List (true,
-            List.map (fun (i, st) -> InOut.Space (* TODO *)) l))) in
+          update_next (IO.block_node (InOut.List (false,
+            Utils.list_map_filter (fun (i, st) ->
+              match try Some (PMap.find lg i.Recipe.description)
+                    with Not_found -> None with
+              | None -> None
+              | Some s ->
+                let n = step_to_node s in
+                let n =
+                  (* TODO: Print picture, if any. *) n in
+                let n =
+                  let inter = IO.clickableNode n in
+                  inter.IO.onChange (fun _ ->
+                      ignore (st, add_past) (* TODO: this item has been clicked. *)
+                    ) ;
+                  inter.IO.node in
+                Some (InOut.Node n)) l))) in
       explore (Navigation.init recipes) ;
       let%lwt cont = cont in cont () in
 
@@ -145,7 +168,7 @@ let main =
   with e ->
     try%lwt
       let (errorOccurred, reportIt, there, errorDetails) = !errorTranslations in
-      IO.print_block ~error:true (InOut.Div (InOut.Normal, [], [
+      IO.print_block ~kind:InOut.ErrorResponse (InOut.Div (InOut.Normal, [], [
           InOut.P [
               InOut.Text errorOccurred ; InOut.Text reportIt ;
               InOut.LinkExtern (InOut.Simple, there, webpage_issues)
