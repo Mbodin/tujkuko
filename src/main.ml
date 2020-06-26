@@ -149,6 +149,7 @@ let main =
                 let n =
                   let inter = IO.clickableNode n in
                   inter.IO.onChange (fun _ ->
+                      IO.log "DEBUG" ;
                       (** The user has chosen this step. *)
                       update_next (IO.block_node InOut.Space) ;
                       let idp = id () in
