@@ -1,18 +1,20 @@
 {
 	"recipes": [
 		{
+			"id": "test-A",
 			"description": {
-					"en": ["test A"],
-					"eo": ["provo A"],
-					"fr": ["test A"]
-				},
+				"en": ["test A"],
+				"eo": ["provo A"],
+				"fr": ["test A"]
+			},
 			"hints": {
-					"en": [["test: hint"]],
-					"eo": [["provo: indiko"]],
-					"fr": [["test: conseil"]]
+				"en": [["test: hint"], ["test: hint2", " with more text"]],
+				"eo": [["provo: indiko"], ["provo: indiko2", " kun plia teksto"]],
+				"fr": [["test: conseil"], ["test: conseil2", " avec plus de texte"]]
 			},
 			"next": [
 				{
+					"id": "test-C",
 					"description": {
 						"en": ["test C"],
 						"eo": ["provo C"],
@@ -20,18 +22,50 @@
 					},
 					"hints": {},
 					"next": []
+				},
+				{
+					"id": "only-en",
+					"description": {
+						"en": ["test only en"]
+					},
+					"hints": {
+						"en": [["hint only en"]]
+					},
+					"next": []
+				},
+				{
+					"id": "only-eo",
+					"description": {
+						"eo": ["provo nur eo"]
+					},
+					"hints": {
+						"eo": [["konsilo nur eo"]]
+					},
+					"next": []
+				},
+				{
+					"id": "only-fr",
+					"description": {
+						"fr": ["test seulement fr"]
+					},
+					"hints": {
+						"fr": [["conseil seulement fr"]]
+					},
+					"next": []
 				}
-				]
+			]
 		},
 		{
+			"id": "test-B",
 			"description": {
-					"en": ["test B"],
-					"eo": ["provo B"],
-					"fr": ["test B"]
-				},
+				"en": ["test B"],
+				"eo": ["provo B"],
+				"fr": ["test B"]
+			},
 			"hints": {},
 			"next": [
 				{
+					"id": "test-end",
 					"description": {
 						"en": ["test end"],
 						"eo": ["provfino"],

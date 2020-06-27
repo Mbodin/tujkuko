@@ -29,7 +29,8 @@ let rec print_t = function
   | Recipe.Step l -> `List (List.map print l)
 and print (i, t) =
   `Assoc (
-    (Option.map_default (fun p -> [("picture", `String p)]) [] i.Recipe.picture)
+    ("id", `String i.Recipe.id)
+    :: (Option.map_default (fun p -> [("picture", `String p)]) [] i.Recipe.picture)
     @ [
       ("description", print_description i.Recipe.description) ;
       ("hints", print_hints i.Recipe.hints) ;

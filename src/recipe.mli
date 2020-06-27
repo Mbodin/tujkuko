@@ -3,7 +3,7 @@
 (** Each language is identified by its ISO 639 code. *)
 type language = string
 
-(** The type of measuring units. *)
+(** The type of measuring units. *) (* TODO: Move this definition into a file [unit.mli]. *)
 type munit = {
     munit_notation : string (** The notation of the unit. *) ;
     munit_metric : bool (** Whether it accepts metric prefixes. *)
@@ -21,6 +21,8 @@ type step = item list
 
 (** Information that can be stored at any point of the step. *)
 type info = {
+    id : string
+      (** An identifier, unique amongst siblings. *) ;
     picture : string option
       (** An optional picture of the step. *) ;
     description : (language, step) PMap.t

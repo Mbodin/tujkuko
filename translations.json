@@ -11,8 +11,11 @@
 		"welcome": "Bonvenon en la projekto Tujkuko!  Vi tie povas esplori kuirreceptojn.  Bonan esploradon!",
 		"free": "Ĉi tiu programo liberas kaj sia fontkodo malfermas.  Vi povas legi sian fontkodon kaj partopreni ties evoluon",
 		"backToLanguages": "Reen al lingvelekto",
+		"backToRecipe": "Reen al la receptaro",
 		"chooseStep": "Elektu vian unuan kuiretapon ĉi sube klakante sur ĝi.",
-		"editMode": "redakti la receptojn"
+		"bonappetit": "Bonan apetiton!",
+		"editMode": "redakti la receptojn",
+		"saveEdits": "salvi redaktojn"
 	},
 	{
 		"iso639": "fr",
@@ -26,8 +29,11 @@
 		"welcome": "Bienvenu·e dans le projet Tujkuko (à prononcer /tujkuko/, ou « touille-cook-oh », ce qui signifie « Cuisiner dès maintenant » en Espéranto) !  Vous pouvez ici explorer des recettes de cuisines.  Bonne exploration !",
 		"free": "Ce programme est libre.  Vous pouvez consulter son code source et participer à son développement",
 		"backToLanguages": "Retour au choix des langues",
+		"backToRecipe": "Retour aux recettes",
 		"chooseStep": "Choisissez une première étape ci-dessous en cliquant dessus.",
-		"editMode": "éditer les recettes"
+		"bonappetit": "Bon appétit !",
+		"editMode": "éditer les recettes",
+		"saveEdits": "sauvegarder les changements"
 	},
 	{
 		"iso639": "en",
@@ -41,7 +47,10 @@
 		"welcome": "Welcome to the Tujkuko project (to be pronounced “tooy-cook-oh”, which means “Cook right now” in Esperanto)!  You can here explore cooking recipes.  Enjoy!",
 		"free": "This program is free and open-source.  You can read its source code and take part to its developpment",
 		"backToLanguages": "Back to languages selection",
+		"backToRecipe": "Back to the recipe",
 		"chooseStep": "Choose your first step below by clicking on it.",
-		"editMode": "edit recipes"
+		"bonappetit": "Enjoy!",
+		"editMode": "edit recipes",
+		"saveEdits": "save edits"
 	}
 ]

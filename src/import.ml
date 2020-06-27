@@ -75,13 +75,19 @@ let from_json fileContent =
   let fileContent = recode fileContent in
   let rec read = function
     | `Assoc l ->
+      let id =
+        let id = get_field_string "read" "id" l in
+        if String.index_opt id ' ' <> None then
+          failwith "read: unexpected space in identifier" ;
+        id in
       let info = {
+        Recipe.id = id ;
           Recipe.picture =
             Option.map (function
               | `String a -> a
               | _ -> failwith "read: expected a string") (List.assoc_opt "picture" l) ;
-          description = read_description (get_field "from_json, read" "description" l) ;
-          hints = read_hints (get_field "from_json, read" "hints" l) ;
+          Recipe.description = read_description (get_field "from_json, read" "description" l) ;
+          Recipe.hints = read_hints (get_field "from_json, read" "hints" l) ;
         } in
       (info, read_t (get_field "read" "next" l))
     | _ -> failwith "read: not an object"

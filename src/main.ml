@@ -11,8 +11,9 @@ module Main (IO : InOut.T) = struct
 let webpage_link = "https://github.com/Mbodin/tujkuko"
 let webpage_issues = "https://github.com/Mbodin/tujkuko/issues"
 
-(** URL tag *)
+(** URL tags *)
 let urltag_lang = "lang"
+let urltag_path = "path"
 
 (** A trace of the menu function to help debugging. *)
 let trace = ref ["init"]
@@ -40,7 +41,7 @@ let get_translations _ =
     let%lwt translations = IO.get_file translations_file in
     add_trace ("getting translation file (" ^ file_signature translations_file ^ ")") ;
     Lwt.return (Import.import_translations translations_file translations) in
-  (** Shuffling languages, but putting the user languages on top. *)
+  (** Putting the user language on top. *)
   let (matching, nonmatching) =
     List.partition (fun lg ->
       List.exists (fun ulg -> String.exists ulg lg) IO.languages) languages in
@@ -70,8 +71,8 @@ let main =
       let%lwt file = IO.get_file "data/recipes.json" in
       Lwt.return (Import.from_json file) in
 
+    (** Showing to the user all available languages. *)
     let rec ask_for_languages _ =
-      (** Showing to the user all available languages. *)
       add_trace "ask_for_languages" ;
       IO.set_parameters [] ;
       errorTranslations := errorTranslationsDefault ;
@@ -92,13 +93,29 @@ let main =
         cont in
       start language
 
-    and start lg =
+    (** The main loop: display all recipes. *)
+    and start lg (* TODO: path *) =
       add_trace "start" ;
       let (cont, w) = Lwt.task () in
       let get_translation = get_translation lg in
-      IO.set_parameters [(urltag_lang, lg)] ;
+      let set_parameters path =
+        IO.set_parameters [
+            (urltag_lang, lg) ;
+            (urltag_path, String.concat " " path)
+          ] in
+      set_parameters [] ;
       let%lwt recipes = recipes in
       IO.stopLoading () ;%lwt
+      let (save_button, update_save_button) = IO.controlableNode (IO.block_node InOut.Space) in
+      update_save_button (IO.block_node (InOut.LinkContinuation (true, Button false,
+        get_translation "editMode",
+        (fun _ ->
+          (* TODO: Switching edit mode on. *)
+          update_save_button (IO.block_node (InOut.LinkContinuation (true, Button true,
+            get_translation "saveEdits",
+            (fun _ ->
+              IO.clear_response () ;
+              Lwt.wakeup_later w (fun _ -> save_edits lg (* TODO: More infos *)))))))))) ;
       IO.print_block ~kind:InOut.RawResponse (InOut.Div (InOut.Navigation, ["center"], [
           InOut.LinkContinuation (false, Button false,
             get_translation "backToLanguages",
@@ -106,9 +123,7 @@ let main =
               IO.clear_response () ;
               Lwt.wakeup_later w ask_for_languages)) ;
           InOut.Space ;
-          InOut.LinkContinuation (true, Button false,
-            get_translation "editMode",
-            (fun _ -> IO.print_block ~kind:InOut.ErrorResponse (InOut.Text "TODO") (* TODO *)))
+          InOut.Node save_button
         ])) ;
       IO.print_block (InOut.P [
           InOut.Text (get_translation "welcome") ;
@@ -122,6 +137,10 @@ let main =
       (** The node storing the hints. *)
       let (hints, update_hints) =
         IO.controlableNode (IO.block_node InOut.Space) in
+      let update_hints hint_list =
+        update_hints (IO.block_node (InOut.List (false,
+          List.map (fun n ->
+            InOut.Div (InOut.Normal, [], [ InOut.Node n ])) hint_list))) in
       IO.print_block  ~kind:InOut.RawResponse
         (InOut.Div (InOut.Normal, ["hints"], [ InOut.Node hints ])) ;
       (** The node storing the next possible steps. *)
@@ -140,18 +159,17 @@ let main =
        - a function to remove the said element. *)
       let stack = ref [] in
       let id = Id.new_id_function () in
-      (** Given a language, explore a [Recipe.t]. *)
+      (** Given a language, explore a [Recipe.t].
+         The list of hints of the parent step is also given. *)
       let rec explore state hint_list = (* TODO: Some notion of “factor” to multiply each units. *)
+        set_parameters (Navigation.get_path state) ;
         match Navigation.next state with
         | None ->
-          update_hints (IO.block_node InOut.Space) ;
           update_next (IO.block_node InOut.Space) ;
-          () (* TODO: We’ve reached the end. *)
+          update_hints [ step_to_node [ Recipe.Sentence (get_translation "bonappetit") ] ]
         | Some l ->
           (** Adding the corresponding hints. *)
-          update_hints (IO.block_node (InOut.List (false,
-                List.map (fun n ->
-                  InOut.Div (InOut.Normal, [], [ InOut.Node n ])) hint_list))) ;
+          update_hints hint_list ;
           (** Adding the corresponding next steps. *)
           update_next (IO.block_node (InOut.List (false,
             Utils.list_map_filter (fun (i, st) ->
@@ -196,8 +214,23 @@ let main =
                     IO.addClass ["finalStep"] n
                   | Some _ -> n in
                 Some (InOut.Node n)) l))) in
-      explore (Navigation.init recipes)
+      explore (Navigation.init recipes [])
         [ step_to_node [ Recipe.Sentence (get_translation "chooseStep") ] ] ;
+      let%lwt cont = cont in cont ()
+
+    (** Save the edits of the recipe. *)
+    and save_edits lg =
+      add_trace "save_edits" ;
+      let (cont, w) = Lwt.task () in
+      let get_translation = get_translation lg in
+      IO.print_block ~kind:InOut.RawResponse (InOut.Div (InOut.Navigation, ["center"], [
+          InOut.LinkContinuation (false, Button false,
+            get_translation "backToRecipe",
+            (fun _ ->
+              IO.clear_response () ;
+              Lwt.wakeup_later w (fun _ -> start lg)))
+        ])) ;
+      IO.print_block ~kind:InOut.ErrorResponse (InOut.Text ("TODO")) (* TODO *) ;
       let%lwt cont = cont in cont () in
 
     (** Setting the environment. *)
