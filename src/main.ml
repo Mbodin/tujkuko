@@ -104,7 +104,11 @@ let main =
             get_translation "backToLanguages",
             (fun _ ->
               IO.clear_response () ;
-              Lwt.wakeup_later w ask_for_languages))
+              Lwt.wakeup_later w ask_for_languages)) ;
+          InOut.Space ;
+          InOut.LinkContinuation (true, Button false,
+            get_translation "editMode",
+            (fun _ -> IO.print_block ~kind:InOut.ErrorResponse (InOut.Text "TODO") (* TODO *)))
         ])) ;
       IO.print_block (InOut.P [
           InOut.Text (get_translation "welcome") ;
@@ -117,9 +121,7 @@ let main =
         (InOut.Div (InOut.Normal, ["history"], [ InOut.Node past ])) ;
       (** The node storing the hints. *)
       let (hints, update_hints) =
-        IO.controlableNode (IO.block_node (InOut.List (false, [
-          InOut.Div (InOut.Normal, [], [
-            InOut.P [ InOut.Text (get_translation "chooseStep") ] ]) ]))) in
+        IO.controlableNode (IO.block_node InOut.Space) in
       IO.print_block  ~kind:InOut.RawResponse
         (InOut.Div (InOut.Normal, ["hints"], [ InOut.Node hints ])) ;
       (** The node storing the next possible steps. *)
@@ -139,10 +141,17 @@ let main =
       let stack = ref [] in
       let id = Id.new_id_function () in
       (** Given a language, explore a [Recipe.t]. *)
-      let rec explore state = (* TODO: Some notion of “factor” to multiply each units. *)
+      let rec explore state hint_list = (* TODO: Some notion of “factor” to multiply each units. *)
         match Navigation.next state with
-        | None -> () (* TODO: We’ve reached the end. *)
+        | None ->
+          update_hints (IO.block_node InOut.Space) ;
+          update_next (IO.block_node InOut.Space) ;
+          () (* TODO: We’ve reached the end. *)
         | Some l ->
+          (** Adding the corresponding hints. *)
+          update_hints (IO.block_node (InOut.List (false,
+                List.map (fun n ->
+                  InOut.Div (InOut.Normal, [], [ InOut.Node n ])) hint_list))) ;
           (** Adding the corresponding next steps. *)
           update_next (IO.block_node (InOut.List (false,
             Utils.list_map_filter (fun (i, st) ->
@@ -157,7 +166,6 @@ let main =
                   let inter = IO.clickableNode n in
                   inter.IO.onChange (fun _ ->
                       (** The user has chosen this step. *)
-                      update_next (IO.block_node InOut.Space) ;
                       let idp = id () in
                       let p = step_to_node s in
                       let p = IO.clickableNode p in
@@ -165,7 +173,6 @@ let main =
                       stack := (idp, remove_p) :: !stack ;
                       p.IO.onChange (fun _ ->
                         (** The user wants to go back. *)
-                        update_next (IO.block_node InOut.Space) ;
                         let rec aux = function
                           | [] -> assert false
                           | (id', remove) :: l ->
@@ -173,19 +180,13 @@ let main =
                             if id' = idp then l
                             else aux l in
                         stack := aux !stack ;
-                        (* TODO: Put back the old hints? *)
-                        update_hints (IO.block_node InOut.Space) ;
-                        explore state) ;
-                      (** Adding the corresponding hints. *)
-                      update_hints (IO.block_node (InOut.List (false,
-                          match try Some (PMap.find lg i.Recipe.hints)
-                            with Not_found -> None with
-                          | None -> []
-                          | Some l ->
-                            List.map (fun s ->
-                              InOut.Div (InOut.Normal, [], [ InOut.Node (step_to_node s) ])) l
-                        ))) ;
-                      explore st
+                        explore state hint_list) ;
+                      let hint_list =
+                        try
+                          let hs = PMap.find lg i.Recipe.hints in
+                          List.map step_to_node hs
+                        with Not_found -> [] in
+                      explore st hint_list
                     ) ;
                   inter.IO.node in
                 let n =
@@ -195,7 +196,8 @@ let main =
                     IO.addClass ["finalStep"] n
                   | Some _ -> n in
                 Some (InOut.Node n)) l))) in
-      explore (Navigation.init recipes) ;
+      explore (Navigation.init recipes)
+        [ step_to_node [ Recipe.Sentence (get_translation "chooseStep") ] ] ;
       let%lwt cont = cont in cont () in
 
     (** Setting the environment. *)

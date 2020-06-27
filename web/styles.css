@@ -89,6 +89,10 @@ body.printable #response {
   margin: 5px ;
 }
 
+#response nav {
+  white-space: normal ;
+}
+
 .block {
   border: 4px solid #ce5c00 ;
 }
