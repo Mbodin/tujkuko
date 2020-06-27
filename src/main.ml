@@ -99,7 +99,7 @@ let main =
       IO.set_parameters [(urltag_lang, lg)] ;
       let%lwt recipes = recipes in
       IO.stopLoading () ;%lwt
-      IO.print_block (InOut.Div (InOut.Centered, [], [
+      IO.print_block ~kind:InOut.RawResponse (InOut.Div (InOut.Navigation, ["center"], [
           InOut.LinkContinuation (false, Button false,
             get_translation "backToLanguages",
             (fun _ ->
@@ -115,7 +115,13 @@ let main =
       let (past, add_past) = IO.extendableList () in
       IO.print_block ~kind:InOut.RawResponse
         (InOut.Div (InOut.Normal, ["history"], [ InOut.Node past ])) ;
-      (* TODO: A node for recipe hints. *)
+      (** The node storing the hints. *)
+      let (hints, update_hints) =
+        IO.controlableNode (IO.block_node (InOut.List (false, [
+          InOut.Div (InOut.Normal, [], [
+            InOut.P [ InOut.Text (get_translation "chooseStep") ] ]) ]))) in
+      IO.print_block  ~kind:InOut.RawResponse
+        (InOut.Div (InOut.Normal, ["hints"], [ InOut.Node hints ])) ;
       (** The node storing the next possible steps. *)
       let (next, update_next) = IO.controlableNode (IO.block_node InOut.Space) in
       IO.print_block  ~kind:InOut.RawResponse
@@ -137,6 +143,7 @@ let main =
         match Navigation.next state with
         | None -> () (* TODO: We’ve reached the end. *)
         | Some l ->
+          (** Adding the corresponding next steps. *)
           update_next (IO.block_node (InOut.List (false,
             Utils.list_map_filter (fun (i, st) ->
               match try Some (PMap.find lg i.Recipe.description)
@@ -157,7 +164,7 @@ let main =
                       let remove_p = add_past p.IO.node in
                       stack := (idp, remove_p) :: !stack ;
                       p.IO.onChange (fun _ ->
-                        (** The user wants to go back to this step. *)
+                        (** The user wants to go back. *)
                         update_next (IO.block_node InOut.Space) ;
                         let rec aux = function
                           | [] -> assert false
@@ -166,10 +173,27 @@ let main =
                             if id' = idp then l
                             else aux l in
                         stack := aux !stack ;
+                        (* TODO: Put back the old hints? *)
+                        update_hints (IO.block_node InOut.Space) ;
                         explore state) ;
+                      (** Adding the corresponding hints. *)
+                      update_hints (IO.block_node (InOut.List (false,
+                          match try Some (PMap.find lg i.Recipe.hints)
+                            with Not_found -> None with
+                          | None -> []
+                          | Some l ->
+                            List.map (fun s ->
+                              InOut.Div (InOut.Normal, [], [ InOut.Node (step_to_node s) ])) l
+                        ))) ;
                       explore st
                     ) ;
                   inter.IO.node in
+                let n =
+                  match Navigation.next st with
+                  | None ->
+                    (** This step is a final one. *)
+                    IO.addClass ["finalStep"] n
+                  | Some _ -> n in
                 Some (InOut.Node n)) l))) in
       explore (Navigation.init recipes) ;
       let%lwt cont = cont in cont () in

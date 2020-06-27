@@ -18,6 +18,11 @@ body {
 	font-family: serif ;
 }
 
+p {
+	margin-top: 1em ;
+	margin-bottom: 1em ;
+}
+
 h1 {
 	text-align: center ;
 	color: #ce5c00 ;
@@ -78,18 +83,18 @@ body.printable #response {
 
 /* Main classes */
 
-.block {
-  border: 4px solid #ce5c00 ;
+.block, .error, #response nav {
   border-radius: 10px ;
   padding: 5px 15px ;
   margin: 5px ;
 }
 
+.block {
+  border: 4px solid #ce5c00 ;
+}
+
 .error {
   border: 4px solid #a40000 ;
-  border-radius: 10px ;
-  padding: 5px 15px ;
-  margin: 5px ;
 }
 
 .center {
@@ -394,25 +399,20 @@ button.autocomplete-close {
 
 /* Specific classes */
 
-.hint {
-  background-color: #729fcf ;
-  background-image: url(icons/tool/bulb01.svg) ;
-	background-size: 60px ;
-  background-position: 9px 0px ;
-  background-repeat: no-repeat ;
-  border: 4px solid #3465a4 ;
-  border-radius: 10px ;
-  padding: 15px 60px ;
-  margin: 5px ;
-}
-
-.history li > div, .future li > div {
+.history li > div, .future li > div, .hints li > div {
 	background-size: 60px ;
   background-position: 9px 0px ;
   background-repeat: no-repeat ;
   border-radius: 10px ;
   padding: 5px 15px 5px 100px ;
   margin: 5px ;
+	min-height: 60px ;
+}
+
+.hints li > div {
+  background-color: #729fcf ;
+  background-image: url(icons/tool/bulb01.svg) ;
+  border: 4px solid #3465a4 ;
 }
 
 .history li > div {
@@ -421,15 +421,20 @@ button.autocomplete-close {
   border: 4px solid #c17d11 ;
 }
 
-.history li:hover,
-.history li:hover ~ li {
-	opacity: 0.7 ;
+.history li:hover > div,
+.history li:hover ~ li > div {
+	opacity: 0.8 ;
+  background-image: url(icons/pencil/eraser02.svg) ;
 }
 
 .future li > div {
   background-color: #edd400 ;
   background-image: url(icons/key/key04.svg) ;
   border: 4px solid #c4a000 ;
+}
+
+.future li > div.finalStep {
+  background-image: url(icons/tool/bag01.svg) ;
 }
 
 .future li > div:hover {

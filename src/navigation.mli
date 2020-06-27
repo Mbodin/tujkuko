@@ -13,3 +13,5 @@ val init : Recipe.t -> state
    that the next steps have not been translated or added. *)
 val next : state -> (Recipe.info * state) list option
 
+(* TODO: Timers might preemptively trigger a step to be automatically added into the history. *)
+
