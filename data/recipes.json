@@ -2,21 +2,21 @@
 	"recipes": [
 		{
 			"description": {
+					"en": ["test A"],
 					"eo": ["provo A"],
-					"fr": ["test A"],
-					"en": ["test A"]
+					"fr": ["test A"]
 				},
 			"hints": {
+					"en": [["test: hint"]],
 					"eo": [["provo: indiko"]],
-					"fr": [["test: conseil"]],
-					"en": [["test: hint"]]
+					"fr": [["test: conseil"]]
 			},
 			"next": [
 				{
 					"description": {
+						"en": ["test C"],
 						"eo": ["provo C"],
-						"fr": ["test C"],
-						"en": ["test C"]
+						"fr": ["test C"]
 					},
 					"hints": {},
 					"next": []
@@ -25,17 +25,17 @@
 		},
 		{
 			"description": {
+					"en": ["test B"],
 					"eo": ["provo B"],
-					"fr": ["test B"],
-					"en": ["test B"]
+					"fr": ["test B"]
 				},
 			"hints": {},
 			"next": [
 				{
 					"description": {
+						"en": ["test end"],
 						"eo": ["provfino"],
-						"fr": ["fin de test"],
-						"en": ["test end"]
+						"fr": ["fin de test"]
 					},
 					"hints": {},
 					"next": "end"

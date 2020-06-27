@@ -19,10 +19,10 @@ let print_item = function
 let print_step s = `List (List.map print_item s)
 
 let print_description d =
-  `Assoc (PMap.foldi (fun lg s l -> (lg, print_step s) :: l) d [])
+  `Assoc (List.rev (PMap.foldi (fun lg s l -> (lg, print_step s) :: l) d []))
 
 let print_hints d =
-  `Assoc (PMap.foldi (fun lg h l -> (lg, `List (List.map print_step h)) :: l) d [])
+  `Assoc (List.rev (PMap.foldi (fun lg h l -> (lg, `List (List.map print_step h)) :: l) d []))
 
 let rec print_t = function
   | Recipe.End -> `String "end"

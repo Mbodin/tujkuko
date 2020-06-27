@@ -100,7 +100,14 @@ let%test _ =
   let recipes = from_json file in
   let file' = Export.to_json recipes in
   let file' = Yojson.Safe.compact file' in
-  file = file'
+  let ret = file = file' in
+  if not ret then (
+    let c = open_out "../data/test1.json" in
+    output_string c file ;
+    let c' = open_out "../data/test2.json" in
+    output_string c' file'
+  ) ;
+  ret
 
 let import_translations fileName fileContent =
   match Yojson.Safe.from_string ~fname:fileName fileContent with

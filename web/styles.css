@@ -15,6 +15,16 @@ body {
   background-color: #eeeeec ;
   margin: 0 ;
   padding: 0 ;
+	font-family: serif ;
+}
+
+h1 {
+	text-align: center ;
+	color: #ce5c00 ;
+	margin: 1em ;
+	font-weight: bold ;
+	font-family: serif ;
+	font-size: 3em ;
 }
 
 body.printable {
@@ -69,7 +79,7 @@ body.printable #response {
 /* Main classes */
 
 .block {
-  border: 4px solid #5c3566 ;
+  border: 4px solid #ce5c00 ;
   border-radius: 10px ;
   padding: 5px 15px ;
   margin: 5px ;
@@ -114,12 +124,12 @@ body.printable .center {
 /* Links */
 
 a {
-  color: #75507b ;
+  color: #ce5c00 ;
   text-decoration: none ;
 }
 
 body.printable a {
-  color: #5c3566 ;
+  color: #ce5c00 ;
 }
 
 a::after {
@@ -132,8 +142,8 @@ a::after {
 }
 
 a:hover {
-  color: #5c3566 ;
-  text-shadow: 0px 0px .1px #75507b ;
+  color: #f57900 ;
+  text-shadow: 0px 0px .1px #f57900 ;
   transition: .3s ;
   transition-timing-function: linear;
 }
@@ -176,12 +186,12 @@ a.mainButton, a.secondaryButton {
 }
 
 a.mainButton {
-  background-color: #75507b ;
+  background-color: #f57900 ;
   color: #eeeeec ;
 }
 
 a.mainButton:hover {
-  background-color: #ad7fa8 ;
+  background-color: #fcaf3e ;
 }
 
 a.secondaryButton {
@@ -202,13 +212,13 @@ ul {
 
 ul.bullet > li::before {
   content: "•" ;
-  color: #75507b ;
+  color: #f57900 ;
   display: inline-block ;
   width: 1em ;
 }
 
 body.printable ul.bullet > li::before {
-  color: #5c3566 ;
+  color: #ce5c00 ;
 }
 
 select {
@@ -278,11 +288,11 @@ input[type="number"] {
 }
 
 input[type="checkbox"]:checked + .slider {
-  background-color: #5c3566 ;
+  background-color: #ce5c00 ;
 }
 
 input[type="checkbox"]:focus + .slider {
-  box-shadow: 0 0 1px #5c3566 ;
+  box-shadow: 0 0 1px #ce5c00 ;
 }
 
 input[type="checkbox"]:checked + .slider::before {
@@ -320,8 +330,8 @@ input[type="checkbox"]:checked ~ .textswitchoff {
 
 .autocomplete > ul > li {
   display: inline-block ;
-  background-color: #ad7fa8 ;
-  border: 2px solid #75507b ;
+  background-color: #fcaf3e ;
+  border: 2px solid #f57900 ;
   border-radius: 1ex ;
   margin-right: 1ex ;
   padding-left: 3px ;
@@ -329,11 +339,11 @@ input[type="checkbox"]:checked ~ .textswitchoff {
 
 button.autocomplete-close {
   background-color: #eeeeec ;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='7' height='7'><line x1='0' y1='0' x2='7' y2='7' style='stroke:%235c3566;stroke-width:2' /><line x1='0' y1='7' x2='7' y2='0' style='stroke:%235c3566;stroke-width:2' /></svg>") ;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='7' height='7'><line x1='0' y1='0' x2='7' y2='7' style='stroke:%23ce5c00;stroke-width:2' /><line x1='0' y1='7' x2='7' y2='0' style='stroke:%23ce5c00;stroke-width:2' /></svg>") ;
   background-repeat: no-repeat ;
   background-position: center ;
   border-radius: 50% ;
-  border: 2px solid #5c3566 ;
+  border: 2px solid #ce5c00 ;
   vertical-align: text-bottom ;
   margin: 3px ;
   width: 15px ;
@@ -348,7 +358,7 @@ button.autocomplete-close {
 
 .autocomplete > input[type="text"] {
   width: 100% ;
-  border: 1px solid #75507b ;
+  border: 1px solid #f57900 ;
   padding: 3px 1ex ;
   margin: 0 ;
 }
@@ -365,7 +375,7 @@ button.autocomplete-close {
 
 .autocomplete-items > div {
   width: 100% ;
-  border: 1px solid #75507b ;
+  border: 1px solid #f57900 ;
   border-top: none ;
   background-color: #eeeeec ;
   cursor: pointer ;
@@ -373,12 +383,12 @@ button.autocomplete-close {
 }
 
 .autocomplete-items > div:hover {
-  background-color: #ad7fa8 ;
+  background-color: #fcaf3e ;
 }
 
 .autocomplete-items > div.autocomplete-active {
   color: #eeeeec ;
-  background-color: #75507b ;
+  background-color: #f57900 ;
 }
 
 
@@ -411,10 +421,19 @@ button.autocomplete-close {
   border: 4px solid #c17d11 ;
 }
 
+.history li:hover,
+.history li:hover ~ li {
+	opacity: 0.7 ;
+}
+
 .future li > div {
-  background-color: #fce94f ;
+  background-color: #edd400 ;
   background-image: url(icons/key/key04.svg) ;
-  border: 4px solid #edd400 ;
+  border: 4px solid #c4a000 ;
+}
+
+.future li > div:hover {
+  background-color: #fce94f ;
 }
 
 .clickable {
