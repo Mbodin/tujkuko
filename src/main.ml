@@ -10,6 +10,7 @@ module Main (IO : InOut.T) = struct
 
 let webpage_link = "https://github.com/Mbodin/tujkuko"
 let webpage_issues = "https://github.com/Mbodin/tujkuko/issues"
+let webpage_icons = "http://poufpoufproduction.fr/"
 
 (** URL tags *)
 let urltag_lang = "lang"
@@ -130,6 +131,10 @@ let main =
           InOut.Text (get_translation "free") ;
           InOut.LinkExtern (InOut.Simple, get_translation "there", webpage_link) ;
         ]) ;
+      IO.print_block (InOut.P [
+          InOut.Text (get_translation "iconsDescription") ;
+          InOut.LinkExtern (InOut.Simple, get_translation "there", webpage_icons) ;
+        ]) ;
       (** The node storing all the steps that were done until now. *)
       let (past, add_past) = IO.extendableList () in
       IO.print_block ~kind:InOut.RawResponse
@@ -162,6 +167,9 @@ let main =
       (** Given a language, explore a [Recipe.t].
          The list of hints of the parent step is also given. *)
       let rec explore state hint_list = (* TODO: Some notion of “factor” to multiply each units. *)
+        (* TODO: This needs to be refactorised.
+           Given that a lot of links are involved, this will probably has to be much more imperative
+           than it currently is. *)
         set_parameters (Navigation.get_path state) ;
         match Navigation.next state with
         | None ->

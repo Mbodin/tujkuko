@@ -21,7 +21,7 @@
 						"fr": ["test C"]
 					},
 					"hints": {},
-					"next": []
+					"next": "end"
 				},
 				{
 					"id": "only-en",
@@ -52,6 +52,16 @@
 						"fr": [["conseil seulement fr"]]
 					},
 					"next": []
+				},
+				{
+					"id": "test-D",
+					"description": {
+						"en": ["test D"],
+						"eo": ["provo D"],
+						"fr": ["test D"]
+					},
+					"hints": {},
+					"next": "end"
 				}
 			]
 		},

@@ -44,3 +44,6 @@ You should have received a copy of the GNU Affero General Public License along w
 The program is under the GNU Affero General Public License version 3 (AGPLv3).
 See the file [LICENSE](./LICENSE) for more information.
 
+This program uses icons from [Pouf-Pouf Production’s SVG Inventory Icons](http://poufpoufproduction.fr/).
+These icons are under GLPv3 and LGLPv3 licenses.
+

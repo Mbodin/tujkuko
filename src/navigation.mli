@@ -20,5 +20,11 @@ val init : Recipe.t -> path -> state
    that the next steps have not been translated or added. *)
 val next : state -> (Recipe.info * state) list option
 
+(** Get the parent of the current state, cancelling the last choice made.
+   If there is no parent, the function returns [None]. *)
+val parent : state -> state option
+
+(* TODO: Functions to update the state, but also to get back a full [Recipe.t] to be exported. *)
+
 (* TODO: Timers might preemptively trigger a step to be automatically added into the history. *)
 
