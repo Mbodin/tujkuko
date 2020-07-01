@@ -159,71 +159,103 @@ let main =
           | Recipe.Unit (min, max, u) ->
             ignore (min, max, u) ; InOut.Text "" (* TODO *) in
         IO.block_node (InOut.P (List.map item_to_block s)) in
-      (** The stack of items in the past list, expressed as:
-       - an identifier,
-       - a function to remove the said element. *)
-      let stack = ref [] in
-      let id = Id.new_id_function () in
-      (** Given a language, explore a [Recipe.t].
-         The list of hints of the parent step is also given. *)
-      let rec explore state hint_list = (* TODO: Some notion of “factor” to multiply each units. *)
-        (* TODO: This needs to be refactorised.
-           Given that a lot of links are involved, this will probably has to be much more imperative
-           than it currently is. *)
-        set_parameters (Navigation.get_path state) ;
-        match Navigation.next state with
-        | None ->
-          update_next (IO.block_node InOut.Space) ;
-          update_hints [ step_to_node [ Recipe.Sentence (get_translation "bonappetit") ] ]
-        | Some l ->
-          (** Adding the corresponding hints. *)
-          update_hints hint_list ;
-          (** Adding the corresponding next steps. *)
-          update_next (IO.block_node (InOut.List (false,
-            Utils.list_map_filter (fun (i, st) ->
-              match try Some (PMap.find lg i.Recipe.description)
-                    with Not_found -> None with
-              | None -> None
-              | Some s ->
-                let n = step_to_node s in
-                let n =
-                  (* TODO: Print picture, if any. *) n in
-                let n =
-                  let inter = IO.clickableNode n in
-                  inter.IO.onChange (fun _ ->
-                      (** The user has chosen this step. *)
-                      let idp = id () in
-                      let p = step_to_node s in
-                      let p = IO.clickableNode p in
-                      let remove_p = add_past p.IO.node in
-                      stack := (idp, remove_p) :: !stack ;
-                      p.IO.onChange (fun _ ->
-                        (** The user wants to go back. *)
-                        let rec aux = function
-                          | [] -> assert false
-                          | (id', remove) :: l ->
-                            remove () ;
-                            if id' = idp then l
-                            else aux l in
-                        stack := aux !stack ;
-                        explore state hint_list) ;
-                      let hint_list =
-                        try
-                          let hs = PMap.find lg i.Recipe.hints in
-                          List.map step_to_node hs
-                        with Not_found -> [] in
-                      explore st hint_list
-                    ) ;
-                  inter.IO.node in
-                let n =
-                  match Navigation.next st with
-                  | None ->
-                    (** This step is a final one. *)
-                    IO.addClass ["finalStep"] n
-                  | Some _ -> n in
-                Some (InOut.Node n)) l))) in
-      explore (Navigation.init recipes [])
-        [ step_to_node [ Recipe.Sentence (get_translation "chooseStep") ] ] ;
+      (** The state of the interface, expressed as:
+       - the current [Navigation.state],
+       - the current list of hints,
+       - (* TODO: Some notion of “factor” to multiply each units. *)
+       - a list of tuple for each item in the stack:
+         - the associated [Recipe.info],
+         - the parent’s hints,
+         - a function to remove the said element. *)
+      let state =
+        let hint_init = [
+          step_to_node [ Recipe.Sentence (get_translation "chooseStep") ] ] in
+        let (nav_state, initial_infos) = Navigation.init recipes [] in
+        assert (initial_infos = []) (* TODO: Initialise the corresponding nodes. *) ;
+        ref (nav_state, hint_init, () (* TODO: the factor *), []) in
+      (** To be called at every interface change. *)
+      let update _ =
+        let (nav_state, _, _, _) = !state in
+        set_parameters (Navigation.get_path nav_state) in
+      (** Fetch the hints from a [Recipe.info]. *)
+      let get_hints info =
+        try
+          let hs = PMap.find lg info.Recipe.hints in
+          List.map step_to_node hs
+        with Not_found -> [] in
+      (** To be called when the current state has changed and the hints
+         and next steps have to be updated. *)
+      let rec update_local _ =
+        update () ;
+        let (nav_state, hints, _, _) = !state in
+        update_hints hints ;
+        let next =
+          match Navigation.next nav_state with
+          | None -> InOut.Space
+          | Some l ->
+            InOut.List (false,
+              Utils.list_map_filter (fun (i, st) ->
+                match try Some (PMap.find lg i.Recipe.description)
+                      with Not_found -> None with
+                | None -> None
+                | Some s ->
+                  let n = step_to_node s in
+                  let n =
+                    (* TODO: Print picture, if any. *) n in
+                  let n =
+                    let inter = IO.clickableNode n in
+                    inter.IO.onChange (fun _ ->
+                      move_down hints i s st ;
+                      update_local ()) ;
+                    inter.IO.node in
+                  let n =
+                    match Navigation.next st with
+                    | None ->
+                      (** This step is a final one. *)
+                      IO.addClass ["finalStep"] n
+                    | Some _ -> n in
+                  Some (InOut.Node n)) l) in
+        update_next (IO.block_node next)
+      (** Move one step up the tree. *)
+      and move_up _ =
+        let (nav_state, _, factor, stack) = !state in
+        match Navigation.parent nav_state with
+        | None -> ()
+        | Some nav_state ->
+          match stack with
+          | [] -> assert false
+          | (_, hints, remove) :: stack ->
+            remove () ;
+            state := (nav_state, hints, factor, stack)
+      (** Repeatively calls [move_up] until the right stack legnth is reached. *)
+      and fit_to_stack_length l =
+        let (_, _, _, stack) = !state in
+        let current = List.length stack in
+        assert (l <= current) ;
+        let rec aux = function
+          | 0 -> ()
+          | n -> move_up () ; aux (n - 1) in
+        aux (current - l)
+      (** Move one step down down the tree, given the parent’s hints, as well as
+         the associated [Recipe.info], [Recipe.step] (which could be inferred from
+         the [Recipe.info, but which is provided nonetheless), and [Navigation.state]. *)
+      and move_down parent_hints info step nav_state =
+        let p = step_to_node step in
+        let p = IO.clickableNode p in
+        let remove_p = add_past p.IO.node in
+        let (_, hints, factor, stack) = !state in
+        let current_hints = get_hints info in
+        let current_hints =
+          match Navigation.next nav_state with
+          | None -> (** We reached a final state. *)
+            current_hints @ [ step_to_node [ Recipe.Sentence (get_translation "bonappetit") ] ]
+          | Some _ -> current_hints in
+        state := (nav_state, current_hints, factor, (info, hints, remove_p) :: stack) ;
+        p.IO.onChange (fun _ ->
+          (** The user wants to go back. *)
+            fit_to_stack_length (List.length stack) ;
+            update_local ()) in
+      update_local () ;
       let%lwt cont = cont in cont ()
 
     (** Save the edits of the recipe. *)

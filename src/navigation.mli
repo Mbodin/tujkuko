@@ -10,8 +10,9 @@ type path = string list
 val get_path : state -> path
 
 (** Create a state from a path.
-   If the path is invalid, the created step will be with no past. *)
-val init : Recipe.t -> path -> state
+   If the path is invalid, the created step will be with no past.
+   The list of recipe information traversed to get there is also returned. *)
+val init : Recipe.t -> path -> state * Recipe.info list
 
 (** List all the next steps that can be taken from the current state,
    with the state that would be reached if this direction is taken.
@@ -24,7 +25,20 @@ val next : state -> (Recipe.info * state) list option
    If there is no parent, the function returns [None]. *)
 val parent : state -> state option
 
-(* TODO: Functions to update the state, but also to get back a full [Recipe.t] to be exported. *)
+(** Overwrite the information associated to the current state.
+   The root state has no associated information: this function behaves
+   as the identity function on it. *)
+val write : state -> Recipe.info -> state
+
+(** Add a child to the current node.
+   The state associated to the inserted node is returned after the update state.
+   If the current recipe is [Recipe.End], no child can be added and the function returns [None].
+   The argument [final] states wether the added argument is in turn a [Recipe.End] (default
+   [false]). *)
+val add_child : state -> ?final:bool -> Recipe.info -> (state * state) option
+
+(** Get back the initial [Recipe.t] object (possibly updated). *)
+val export : state -> Recipe.t
 
 (* TODO: Timers might preemptively trigger a step to be automatically added into the history. *)
 
