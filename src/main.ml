@@ -40,7 +40,7 @@ let get_translations _ =
   let%lwt (translation, languages) =
     let translations_file = "translations.json" in
     let%lwt translations = IO.get_file translations_file in
-    add_trace ("getting translation file (" ^ file_signature translations_file ^ ")") ;
+    add_trace (Printf.sprintf "getting translation file (%s)" (file_signature translations_file)) ;
     Lwt.return (Import.import_translations translations_file translations) in
   (** Putting the user language on top. *)
   let (matching, nonmatching) =
@@ -58,15 +58,14 @@ let main =
       try Some (PMap.find (key, lg) translation)
       with Not_found -> None in
     let get_translation_language_direct lg key =
-      Utils.assert_option ("No key `" ^ key ^ "' found for language `"
-                           ^ lg ^ "' at " ^ __LOC__ ^ ".")
+      Utils.assert_option (Printf.sprintf "No key `%s' found for language `%s' at %s." key lg __LOC__)
         (translate_find lg key) in
     let get_translation lg key =
       match translate_find lg key with
       | Some tr -> tr
       | None ->
         let missing = get_translation_language_direct lg "missing" in
-        "<" ^ missing ^ " `" ^ key ^ "'>" in
+        Printf.sprintf "<%s `%s'>" missing key in
     (** We request the recipes without forcing it yet. *)
     let recipes =
       let%lwt file = IO.get_file "data/recipes.json" in
@@ -92,11 +91,11 @@ let main =
                 Lwt.wakeup_later w lg) ]])) languages)) ;
         IO.stopLoading () ;%lwt
         cont in
-      start language
+      start language ""
 
     (** The main loop: display all recipes. *)
-    and start lg (* TODO: path *) =
-      add_trace "start" ;
+    and start lg path =
+      add_trace (Printf.sprintf "start (%s)" path) ;
       let (cont, w) = Lwt.task () in
       let get_translation = get_translation lg in
       let set_parameters path =
@@ -104,9 +103,30 @@ let main =
             (urltag_lang, lg) ;
             (urltag_path, String.concat " " path)
           ] in
-      set_parameters [] ;
+      let path = String.split_on_char ' ' path in
+      set_parameters path ;
       let%lwt recipes = recipes in
-      IO.stopLoading () ;%lwt
+      (** Generate a node given a [Recipe.step]. *)
+      let step_to_node s =
+        let item_to_block = function
+          | Recipe.Sentence str -> InOut.Text str
+          | Recipe.Unit (min, max, u) ->
+            ignore (min, max, u) ; InOut.Text "" (* TODO *) in
+        IO.block_node (InOut.P (List.map item_to_block s)) in
+      let (initial_nav_state, initial_infos) = Navigation.init recipes path in
+      (** The state of the interface, expressed as:
+       - the current [Navigation.state],
+       - the current list of hints,
+       - (* TODO: Some notion of “factor” to multiply each units. *)
+       - a list of tuple for each item in the stack:
+         - the associated [Recipe.info],
+         - the parent’s hints,
+         - a function to remove the said element. *)
+      let state =
+        let hint_init = [
+          step_to_node [ Recipe.Sentence (get_translation "chooseStep") ] ] in
+        ref (initial_nav_state, hint_init, () (* TODO: the factor *), []) in
+      (** Menu buttons. **)
       let (save_button, update_save_button) = IO.controlableNode (IO.block_node InOut.Space) in
       update_save_button (IO.block_node (InOut.LinkContinuation (true, Button false,
         get_translation "editMode",
@@ -116,7 +136,11 @@ let main =
             get_translation "saveEdits",
             (fun _ ->
               IO.clear_response () ;
-              Lwt.wakeup_later w (fun _ -> save_edits lg (* TODO: More infos *)))))))))) ;
+              Lwt.wakeup_later w (fun _ ->
+                let (nav_state, _, _, _) = !state in
+                let path = Navigation.get_path nav_state in
+                let path = String.concat " " path in
+                save_edits lg path (Navigation.export nav_state)))))))))) ;
       IO.print_block ~kind:InOut.RawResponse (InOut.Div (InOut.Navigation, ["center"], [
           InOut.LinkContinuation (false, Button false,
             get_translation "backToLanguages",
@@ -144,35 +168,13 @@ let main =
         IO.controlableNode (IO.block_node InOut.Space) in
       let update_hints hint_list =
         update_hints (IO.block_node (InOut.List (false,
-          List.map (fun n ->
-            InOut.Div (InOut.Normal, [], [ InOut.Node n ])) hint_list))) in
+          List.map (fun n -> [ InOut.Div (InOut.Normal, [], [ InOut.Node n ]) ]) hint_list))) in
       IO.print_block  ~kind:InOut.RawResponse
         (InOut.Div (InOut.Normal, ["hints"], [ InOut.Node hints ])) ;
       (** The node storing the next possible steps. *)
       let (next, update_next) = IO.controlableNode (IO.block_node InOut.Space) in
       IO.print_block  ~kind:InOut.RawResponse
         (InOut.Div (InOut.Normal, ["future"], [ InOut.Node next ])) ;
-      (** Generate a node given a [Recipe.step]. *)
-      let step_to_node s =
-        let item_to_block = function
-          | Recipe.Sentence str -> InOut.Text str
-          | Recipe.Unit (min, max, u) ->
-            ignore (min, max, u) ; InOut.Text "" (* TODO *) in
-        IO.block_node (InOut.P (List.map item_to_block s)) in
-      (** The state of the interface, expressed as:
-       - the current [Navigation.state],
-       - the current list of hints,
-       - (* TODO: Some notion of “factor” to multiply each units. *)
-       - a list of tuple for each item in the stack:
-         - the associated [Recipe.info],
-         - the parent’s hints,
-         - a function to remove the said element. *)
-      let state =
-        let hint_init = [
-          step_to_node [ Recipe.Sentence (get_translation "chooseStep") ] ] in
-        let (nav_state, initial_infos) = Navigation.init recipes [] in
-        assert (initial_infos = []) (* TODO: Initialise the corresponding nodes. *) ;
-        ref (nav_state, hint_init, () (* TODO: the factor *), []) in
       (** To be called at every interface change. *)
       let update _ =
         let (nav_state, _, _, _) = !state in
@@ -205,7 +207,7 @@ let main =
                   let n =
                     let inter = IO.clickableNode n in
                     inter.IO.onChange (fun _ ->
-                      move_down hints i s st ;
+                      move_down i st ;
                       update_local ()) ;
                     inter.IO.node in
                   let n =
@@ -214,7 +216,7 @@ let main =
                       (** This step is a final one. *)
                       IO.addClass ["finalStep"] n
                     | Some _ -> n in
-                  Some (InOut.Node n)) l) in
+                  Some [ InOut.Node n ]) l) in
         update_next (IO.block_node next)
       (** Move one step up the tree. *)
       and move_up _ =
@@ -236,10 +238,12 @@ let main =
           | 0 -> ()
           | n -> move_up () ; aux (n - 1) in
         aux (current - l)
-      (** Move one step down down the tree, given the parent’s hints, as well as
-         the associated [Recipe.info], [Recipe.step] (which could be inferred from
-         the [Recipe.info, but which is provided nonetheless), and [Navigation.state]. *)
-      and move_down parent_hints info step nav_state =
+      (** Move one step down down the tree, given the associated [Recipe.info]
+         and [Navigation.state]. *)
+      and move_down info nav_state =
+        let step =
+          try PMap.find lg info.Recipe.description
+          with Not_found -> assert false in
         let p = step_to_node step in
         let p = IO.clickableNode p in
         let remove_p = add_past p.IO.node in
@@ -255,12 +259,14 @@ let main =
           (** The user wants to go back. *)
             fit_to_stack_length (List.length stack) ;
             update_local ()) in
+      List.iter (fun (i, st) -> move_down i st) initial_infos ;
       update_local () ;
+      IO.stopLoading () ;%lwt
       let%lwt cont = cont in cont ()
 
     (** Save the edits of the recipe. *)
-    and save_edits lg =
-      add_trace "save_edits" ;
+    and save_edits lg path t =
+      add_trace (Printf.sprintf "save_edits (%s)" path) ;
       let (cont, w) = Lwt.task () in
       let get_translation = get_translation lg in
       IO.print_block ~kind:InOut.RawResponse (InOut.Div (InOut.Navigation, ["center"], [
@@ -268,7 +274,15 @@ let main =
             get_translation "backToRecipe",
             (fun _ ->
               IO.clear_response () ;
-              Lwt.wakeup_later w (fun _ -> start lg)))
+              Lwt.wakeup_later w (fun _ -> start lg path)))
+        ])) ;
+      IO.print_block (InOut.Div (InOut.Normal, [], [
+          InOut.P [ InOut.Text (get_translation "listOfSaveMethods") ] ;
+          InOut.List (true, [
+              [ InOut.LinkFile (InOut.Button true, get_translation "methodJSONButton",
+                  "recipes.json", "application/json", true, (fun _ -> Export.to_json t)) ;
+                InOut.Text (get_translation "methodJSON") ]
+            ])
         ])) ;
       IO.print_block ~kind:InOut.ErrorResponse (InOut.Text ("TODO")) (* TODO *) ;
       let%lwt cont = cont in cont () in
@@ -284,7 +298,12 @@ let main =
         | Some _ -> Some lg in
     match lg with
     | None -> ask_for_languages ()
-    | Some lg -> start lg (* LATER: Being able to remember in which step we were in a recipe. *)
+    | Some lg ->
+      let path =
+        match List.assoc_opt urltag_path arguments with
+        | None -> ""
+        | Some p -> p in
+      start lg path
 
   (** Reporting errors. *)
   with e ->

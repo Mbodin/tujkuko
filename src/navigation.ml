@@ -22,31 +22,13 @@ type state = {
       (** The context to get there. *)
   }
 
-let rec context_to_path = function
-  | Hole -> []
-  | ContextStep (_, i, _, c) -> i.Recipe.id :: context_to_path c
+let context_to_path =
+  let rec aux acc = function
+    | Hole -> acc
+    | ContextStep (_, i, _, c) -> aux (i.Recipe.id :: acc) c in
+  aux []
 
 let get_path st = context_to_path st.context
-
-let init t p =
-  (** The value to be returned if the path is invalid. *)
-  let base = ({
-      recipe = t ;
-      context = Hole
-    }, []) in
-  let rec aux c is = function
-    | (t, []) -> ({
-        recipe = t ;
-        context = c
-      }, List.rev is)
-    | (Recipe.End, _) -> base
-    | (Recipe.Step l, id :: p) ->
-      match Utils.list_predicate_prefix (fun (i, _t) -> id <> i.Recipe.id) l with
-      | (l_before, (i, t) :: l_after) ->
-        assert (id = i.Recipe.id) ;
-        aux (ContextStep (l_before, i, l_after, c)) (i :: is) (t, p)
-      | _ -> base in
-  aux Hole [] (t, p)
 
 let next st =
   match st.recipe with
@@ -61,6 +43,23 @@ let next st =
           }) :: aux (BidirectionalList.add_right before (i, t)) after
     in
     Some (aux BidirectionalList.empty l)
+
+let init t =
+  let rec aux acc st = function
+    | [] -> (st, List.rev acc)
+    | id :: p ->
+      match next st with
+      | None -> (st, List.rev acc)
+      | Some l ->
+        match Utils.list_predicate_prefix (fun (i, _st) -> id <> i.Recipe.id) l with
+        | (_l_before, (i, st) :: _l_after) ->
+          assert (id = i.Recipe.id) ;
+          aux ((i, st) :: acc) st p
+        | _ -> (st, List.rev acc) in
+  aux [] {
+      recipe = t ;
+      context = Hole
+    }
 
 let parent st =
   match st.context with

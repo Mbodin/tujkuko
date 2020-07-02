@@ -16,7 +16,10 @@
 		"chooseStep": "Elektu vian unuan kuiretapon ĉi sube alklakante sur ĝi.",
 		"bonappetit": "Bonan apetiton!",
 		"editMode": "redakti la receptojn",
-		"saveEdits": "salvi redaktojn"
+		"saveEdits": "salvi redaktojn",
+		"listOfSaveMethods": "Estas pluraj metodoj por aplikigi viajn ŝanĝojn al la programaĵo:",
+		"methodJSONButton": "Rekte elŝuti la receptan dosieron",
+		"methodJSON": "Tiu dosiero devas esti metita en la dosierujon “data” de via lokala versio de la programaĵo (por spertuloj)."
 	},
 	{
 		"iso639": "fr",
@@ -29,13 +32,16 @@
 		"errorDetails": "Détails de l’erreur :",
 		"welcome": "Bienvenu·e dans le projet Tujkuko (à prononcer /tujkuko/, ou « touille-cook-oh », ce qui signifie « Cuisiner dès maintenant » en Espéranto) !  Vous pouvez ici explorer des recettes de cuisines.  Bonne exploration !",
 		"free": "Ce programme est libre.  Vous pouvez consulter son code source et participer à son développement",
-		"iconsDescription": "Les icones utilisés dans ce projet viennent du projet de Pouf-Pouf Production, disponible",
+		"iconsDescription": "Les icones utilisés dans ce projet viennent du projet Pouf-Pouf Production, disponible",
 		"backToLanguages": "Retour au choix des langues",
 		"backToRecipe": "Retour aux recettes",
 		"chooseStep": "Choisissez une première étape ci-dessous en cliquant dessus.",
 		"bonappetit": "Bon appétit !",
 		"editMode": "éditer les recettes",
-		"saveEdits": "sauvegarder les changements"
+		"saveEdits": "sauvegarder les changements",
+		"listOfSaveMethods": "Il y a plusieurs manières d’appliquer vos changements au programme :",
+		"methodJSONButton": "Télécharger directement le fichier de recettes",
+		"methodJSON": "Ce fichier est à placer dans le dossier « data » de votre version locale du programme (réservé aux utilisateurs avancés)."
 	},
 	{
 		"iso639": "en",
@@ -54,6 +60,9 @@
 		"chooseStep": "Choose your first step below by clicking on it.",
 		"bonappetit": "Enjoy!",
 		"editMode": "edit recipes",
-		"saveEdits": "save edits"
+		"saveEdits": "save edits",
+		"listOfSaveMethods": "There are several methods to apply your changes to the program:",
+		"methodJSONButton": "Directly download the recipe file",
+		"methodJSON": "This file is to be placed in the “data” folder of your local version of the program (for advanced users)."
 	}
 ]

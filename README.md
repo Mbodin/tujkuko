@@ -28,7 +28,7 @@ One can generate documentation from the source as follows:
 esy doc
 ```
 This should create `_build/default/_doc/_html/index.html` containing the in-source documentation.
-More documentation can be found in [index.md](./doc/index.md).
+Alternatively, the generated documentation is available [here](https://mbodin.github.io/tujkuko/doc/).
 
 # Licence
 

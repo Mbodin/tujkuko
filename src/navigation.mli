@@ -10,9 +10,10 @@ type path = string list
 val get_path : state -> path
 
 (** Create a state from a path.
-   If the path is invalid, the created step will be with no past.
-   The list of recipe information traversed to get there is also returned. *)
-val init : Recipe.t -> path -> state * Recipe.info list
+   If the path is invalid, the created state will be a valid prefix of the provided path.
+   The list of recipe information traversed to get there, as well as their associated states,
+   is also returned. *)
+val init : Recipe.t -> path -> state * (Recipe.info * state) list
 
 (** List all the next steps that can be taken from the current state,
    with the state that would be reached if this direction is taken.
