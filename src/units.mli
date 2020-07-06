@@ -18,16 +18,27 @@ type kind =
   | Time
   | Temperature
 
-(** Get the kind ofa unit. *)
+(** Get the kind of a unit. *)
 val get_kind : t -> kind
 
-(** A unit system (e.g. metric or imperial) *)
+(** A unit system (e.g. metric) *)
 type system
 
-(** All the available systems.
- * The first one is usually the most preferable one. *)
-val all_systems : system list
+(** Each system is only made for a specific kind of units. *)
+val get_system_kind : system -> kind
 
-(** Given a unit system, normalises the unit. *)
+(** Given a system, returns its base unit. *)
+val get_base_unit : system -> t
+
+(** All the available systems, for each unit kinds.
+   The first one is usually the most preferable one. *)
+val all_systems : (kind, system) PMap.t
+
+exception InvalidKind
+
+(** Given a unit system, normalise a value.
+   Raises [InvalidKind] if the system kind does not corresponds to the given unit kind. *)
 val normalise : system -> float * t -> float * t
+
+(* TODO: Import/Export functions *)
 
