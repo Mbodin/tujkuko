@@ -37,10 +37,10 @@ let get_field_bool ctx fld l =
 
 let read_unit l =
   if get_field_bool "read_unit" "unit" l then
-    Some {
-        Recipe.munit_notation = get_field_string "read_unit" "notation" l ;
-        Recipe.munit_metric = get_field_bool "read_unit" "metric" l
-      }
+    let notation = get_field_string "read_unit" "notation" l in
+    match Units.parse notation with
+    | Some u -> Some u
+    | None -> failwith ("read_unit: unknown unit: " ^ notation)
   else None
 
 let read_item = function

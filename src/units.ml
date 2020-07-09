@@ -116,14 +116,18 @@ let rec simple_normalise (v, u) =
       simple_normalise (v, u)
     | _ -> (v, u)
 
+(** Convert a measure to the base metric value. *)
+let to_metric (v, u) =
+  let (v, u) = convert_to_base (v, u) in
+  u.unit_system.base_shift +. v *. u.unit_system.base_value
+
 let normalise s (v, u) =
   (** First, convert to the same unit system. *)
   let (v, u) =
     if s.system_id = u.unit_system.system_id then (v, u)
     else
-      let (v, u) = convert_to_base (v, u) in
       (** First, moving to metric. *)
-      let v = u.unit_system.base_shift +. v *. u.unit_system.base_value in
+      let v = to_metric (v, u) in
       (** Then converting to the new unit *)
       ((v -. s.base_shift) /. s.base_value, get_base_unit s) in
   simple_normalise (v, u)
@@ -362,20 +366,9 @@ let%test_unit _ =
               if not b then
                 Printf.printf "System name clash: %s in %s.\n%!" (print u) (system_name s) ;
               b) (* Two units in the same system never clash. *) ;
-            let (v1, u1) = normalise s (1., u') in
-            assert (
-              let b = print u1 = print u in
-              if not b then
-                Printf.printf "Systems normalise differently: %s vs %s.\n%!" (print u1) (print u) ;
-              b) ;
-            assert (close_enough (print u) 1. v1) ;
-            let (v2, u2) = normalise s' (1., u) in
-            assert (
-              let b = print u2 = print u' in
-              if not b then
-                Printf.printf "Systems normalise differently: %s vs %s.\n%!" (print u1) (print u) ;
-              b) ;
-            assert (close_enough (print u) 1. v2) ;
+            let v1 = to_metric (1., u') in
+            let v2 = to_metric (1., u') in
+            assert (close_enough (print u) v1 v2) ;
             units
           ) else PMap.add u.unit_notation (u, s) units)
         units (system_units s)) units l) all_systems PMap.empty)

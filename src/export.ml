@@ -12,8 +12,7 @@ let print_item = function
         | None -> [("unit", `Bool false)]
         | Some u -> [
             ("unit", `Bool true) ;
-            ("notation", `String u.Recipe.munit_notation) ;
-            ("metric", `Bool u.Recipe.munit_metric)
+            ("notation", `String (Units.print u)) ;
           ])
 
 let print_step s = `List (List.map print_item s)
