@@ -5,6 +5,7 @@ let print_item = function
   | Recipe.Sentence str -> `String str
   | Recipe.Unit (min, max, u) ->
     `Assoc ([
+        ("kind", `String "unit") ;
         ("min", `Float min) ;
         ("max", `Float max) ;
       ] @

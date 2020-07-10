@@ -163,7 +163,6 @@ let si_prefixes = [
    one for the lower ones, with their associated values. *)
 let create_si_unit base prefixes =
   let (low, high) = List.partition (fun (_, i) -> i <= 0) prefixes in
-  let low = List.filter (fun (_, i) -> i <> 0) low in
   let low = List.sort (fun (_, i1) (_, i2) -> - compare i1 i2) low in
   let low =
     let rec aux current acc = function
@@ -183,7 +182,11 @@ let create_si_unit base prefixes =
   (low, high)
 
 (** A smart constructor for metric-like units. *)
-let create_metric kind name base prefixes =
+let create_metric ?(remove0=true) kind name base prefixes =
+  let prefixes =
+    if remove0 then
+      List.filter (fun (_, i) -> i <> 0) prefixes
+    else prefixes in
   let (lower, higher) = create_si_unit base prefixes in {
     system_id = name ;
     system_kind = kind ;
@@ -194,6 +197,21 @@ let create_metric kind name base prefixes =
     lower_units = lower
   }
 
+(** Similar to [create_metric], but this time is given a list of pairs:
+  - a unit, associated to some prefixes,
+  - its list of associated prefixes and their associated values. *)
+let create_discontinued ?(remove0=false) kind name base value l =
+  let l = (* To have as default value the first one in the list. *) List.rev l in
+  let l =
+    List.concat (List.map (fun (base, prefixes) ->
+      List.map (fun (p, e) -> (p ^ base, e)) prefixes) l) in
+  let s = create_metric ~remove0 kind name "" l in
+  { s with
+    base_notation = base ;
+    base_value = value
+  }
+
+
 (** All the metric systems. *)
 
 (** Mass units. *)
@@ -203,30 +221,17 @@ let metric_mass =
   { s with base_notation = "kg" }
 
 let usual_mass =
-  let lower =
-    let small_prefixes =
-      let prefixes = List.map (fun (p, e) -> (p, e - 3)) si_prefixes in
-      List.filter (fun (_, e) -> e <= 0) prefixes in
-    let (lower, higher) = create_si_unit "g" small_prefixes in
-    assert (higher = []) ;
-    lower in
-  let higher =
-    let large_prefixes =
-      let prefixes = List.map (fun (p, e) -> (p, e + 3)) si_prefixes in
-      List.filter (fun (_, e) -> e >= 3) prefixes in
-    let (lower, higher) = create_si_unit "t" large_prefixes in
-    assert (lower = []) ;
-    higher in {
-    system_id = "usual" ;
-    system_kind = Mass ;
-    base_notation = "kg" ;
-    base_value = 1. ;
-    base_shift = 0. ;
-    higher_units = higher ;
-    lower_units = lower
-  }
-
-(* TODO: common devices (spoons, cups, etc.). *)
+  let si_prefixes = List.filter (fun (_, e) -> e mod 3 = 0) si_prefixes in
+  let small_prefixes =
+    let prefixes = List.map (fun (p, e) -> (p, e - 3)) si_prefixes in
+    List.filter (fun (_, e) -> e <= 0) prefixes in
+  let large_prefixes =
+    let prefixes = List.map (fun (p, e) -> (p, e + 3)) si_prefixes in
+    List.filter (fun (_, e) -> e >= 3) prefixes in
+  create_discontinued ~remove0:true Mass "usual" "kg" 1. [
+      ("g", small_prefixes) ;
+      ("t", large_prefixes) ;
+    ]
 
 (** Length units. *)
 
@@ -234,7 +239,7 @@ let metric_length =
   create_metric Length "metric" "m" si_prefixes
 
 let usual_length =
-  let prefixes = List.filter (fun (_, e) -> e <= 3) si_prefixes in
+  let prefixes = List.filter (fun (_, e) -> e <= 3 && (e mod 3 = 0 || e = -2)) si_prefixes in
   let s = create_metric Length "usual" "m" prefixes in
   { s with higher_units =
             s.higher_units @ [
@@ -246,9 +251,30 @@ let usual_length =
 (** Volume units. *)
 
 let metric_volume =
-  create_metric Volume "metric" "m³" (List.map (fun (p, e) -> (p, 3 * e)) si_prefixes)
+  let prefixes = List.map (fun (p, e) -> (p, 3 * e)) si_prefixes in
+  create_discontinued Volume "metric" "m³" 1. [
+      ("m³", List.filter (fun (_, e) -> e <> 0) prefixes) ;
+      ("m^3", prefixes) ;
+    ]
 
-(* TODO: Usual alternative units (liters, etc.). *)
+let liter_volume =
+  let liter_prefixes =
+    let prefixes = List.map (fun (p, e) -> (p, e - 3)) si_prefixes in
+    List.filter (fun (_, e) -> e mod 3 = 0) prefixes in
+  create_discontinued Volume "liter" "kℓ" 1. [
+      ("ℓ", List.filter (fun (_, e) -> e <> 0) liter_prefixes) ;
+      ("l", liter_prefixes) ;
+      ("L", liter_prefixes)
+    ]
+
+(* TODO: common devices (spoons, cups, etc.). *)
+
+(** Time units. *)
+
+let metric_time =
+  create_metric Time "metric" "s" si_prefixes
+
+(* TODO: minutes, hours, days, annum. *)
 
 (** Temperature units. *)
 
@@ -278,7 +304,7 @@ let fahrenheit = {
 let french_thermostat = {
     system_id = "fr-thermostat" ;
     system_kind = Temperature ;
-    base_notation = "Th" ;
+    base_notation = "Thermostat" ;
     base_value = 27.77777777777778 ;
     base_shift = 300.937777778 ;
     higher_units = [] ;
@@ -314,14 +340,17 @@ let all_systems =
       ] m in
   let m =
     PMap.add Length [
-        metric_length ;
-        usual_length
+        usual_length ;
+        metric_length
       ] m in
   let m =
     PMap.add Volume [
+        liter_volume ;
         metric_volume
       ] m in
-  let m = PMap.add Time [ (* TODO *) ] m in
+  let m = PMap.add Time [
+        metric_time
+      ] m in
   let m =
     PMap.add Temperature [
         celsius ;
@@ -345,6 +374,14 @@ let%test _ =
           b) l) l) all_systems true
 
 let%test_unit _ =
+  (** Just printing all defined units. *)
+  PMap.iter (fun kind l ->
+    Printf.printf "%s:\n" (kind_name kind) ;
+    List.iter (fun s ->
+      Printf.printf "\t%s: %s.\n%!" (system_name s)
+        (String.concat ", " (List.map print (system_units s)))) l) all_systems
+
+let%test_unit _ =
   (** State that two values are close enough one to the other. *)
   let close_enough u v1 v2 =
     let b = 0.999 *. v1 <= v2 && v2 <= 1.001 *. v1 in
@@ -354,7 +391,12 @@ let%test_unit _ =
   ignore (PMap.foldi (fun kind l units ->
     List.fold_left (fun units s ->
       List.fold_left (fun units u ->
-          assert (kind = get_kind u) ;
+          assert (
+            let b = kind = get_kind u in
+            if not b then
+              Printf.printf "System kind clash for %s (%s vs %s).\n%!"
+                u.unit_notation (kind_name kind) (kind_name (get_kind u)) ;
+            b) ;
           if PMap.mem u.unit_notation units then (
             (* There is a name conflict: let us check that these units convert
                well one to the other.  *)
