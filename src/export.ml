@@ -3,11 +3,12 @@ open ExtLib
 
 let print_item = function
   | Recipe.Sentence str -> `String str
-  | Recipe.Unit (min, max, u) ->
+  | Recipe.Unit (min, max, correlation, u) ->
     `Assoc ([
         ("kind", `String "unit") ;
         ("min", `Float min) ;
         ("max", `Float max) ;
+        ("correlation", `Int correlation)
       ] @
         match u with
         | None -> [("unit", `Bool false)]

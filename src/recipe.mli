@@ -3,12 +3,22 @@
 (** Each language is identified by its ISO 639 code. *)
 type language = string
 
+(** Different values can be interpolated differently.
+   For instance, most cooking time stay the same whatever the quantities,
+   some varies with the square of the quantities, etc.
+   This correlation factor is expressed with a number:
+   - if [0], this value is uncorrelated to the global factor,
+   - if [1], this value is linear with the global factor,
+   - more generally, if the global factor is multiplied by [n], then the value is
+     multiplied by [n^interpolation]. *)
+type interpolation = int
+
 (** A step is a list of items. *)
 type item =
   | Sentence of string (** A string that will be displayed as-is. *)
-  | Unit of float * float * Units.t option
+  | Unit of float * float * interpolation * Units.t option
     (** An expected quantity, with a minimum and maximal values
-      (which can be equal), and an optional unit. *)
+      (which can be equal), the interpolation, and an optional unit. *)
   (* LATER: timers, menu lists, links to OpenFoodFacts, etc. *)
 
 type step = item list

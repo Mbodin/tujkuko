@@ -78,25 +78,25 @@
 					"id": "unit-test",
 					"description": {
 						"en": [
-							"length: ", {"kind": "unit", "min": 1.0, "max": 3.0, "unit": true, "notation": "mm"},
-							"mass: ", {"kind": "unit", "min": 1.0, "max": 3.0, "unit": true, "notation": "g"},
-							"volume: ", {"kind": "unit", "min": 1.0, "max": 3.0, "unit": true, "notation": "l"},
-							"temperature: ", {"kind": "unit", "min": 150.0, "max": 200.0, "unit": true, "notation": "°C"},
-							"time: ", {"kind": "unit", "min": 1200.0, "max": 1500.0, "unit": true, "notation": "s"}
+							"length: ", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": -3, "unit": true, "notation": "mm"},
+							"mass: ", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "g"},
+							"volume: ", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "l"},
+							"temperature: ", {"kind": "unit", "min": 150.0, "max": 200.0, "correlation": 0, "unit": true, "notation": "°C"},
+							"time: ", {"kind": "unit", "min": 1200.0, "max": 1500.0, "correlation": 0, "unit": true, "notation": "s"}
 						],
 						"eo": [
-							"longeco: ", {"kind": "unit", "min": 1.0, "max": 3.0, "unit": true, "notation": "mm"},
-							"maso: ", {"kind": "unit", "min": 1.0, "max": 3.0, "unit": true, "notation": "g"},
-							"volumo: ", {"kind": "unit", "min": 1.0, "max": 3.0, "unit": true, "notation": "l"},
-							"temperaturo: ", {"kind": "unit", "min": 150.0, "max": 200.0, "unit": true, "notation": "°C"},
-							"tempo: ", {"kind": "unit", "min": 1200.0, "max": 1500.0, "unit": true, "notation": "s"}
+							"longeco: ", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": -3, "unit": true, "notation": "mm"},
+							"maso: ", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "g"},
+							"volumo: ", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "l"},
+							"temperaturo: ", {"kind": "unit", "min": 150.0, "max": 200.0, "correlation": 0, "unit": true, "notation": "°C"},
+							"tempo: ", {"kind": "unit", "min": 1200.0, "max": 1500.0, "correlation": 0, "unit": true, "notation": "s"}
 						],
 						"fr": [
-							"longueur : ", {"kind": "unit", "min": 1.0, "max": 3.0, "unit": true, "notation": "mm"},
-							"masse : ", {"kind": "unit", "min": 1.0, "max": 3.0, "unit": true, "notation": "g"},
-							"volume : ", {"kind": "unit", "min": 1.0, "max": 3.0, "unit": true, "notation": "l"},
-							"temperature : ", {"kind": "unit", "min": 150.0, "max": 200.0, "unit": true, "notation": "°C"},
-							"temps : ", {"kind": "unit", "min": 1200.0, "max": 1500.0, "unit": true, "notation": "s"}
+							"longueur : ", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": -3, "unit": true, "notation": "mm"},
+							"masse : ", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "g"},
+							"volume : ", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "l"},
+							"temperature : ", {"kind": "unit", "min": 150.0, "max": 200.0, "correlation": 0, "unit": true, "notation": "°C"},
+							"temps : ", {"kind": "unit", "min": 1200.0, "max": 1500.0, "correlation": 0, "unit": true, "notation": "s"}
 						]
 					},
 					"hints": {},

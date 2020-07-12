@@ -110,8 +110,8 @@ let main =
       let step_to_node s =
         let item_to_block = function
           | Recipe.Sentence str -> InOut.Text str
-          | Recipe.Unit (min, max, u) ->
-            ignore (min, max, u) ; InOut.Text "" (* TODO *) in
+          | Recipe.Unit (min, max, correlation, u) ->
+            ignore (min, max, correlation, u) ; InOut.Text "" (* TODO *) in
         IO.block_node (InOut.P (List.map item_to_block s)) in
       let (initial_nav_state, initial_infos) = Navigation.init recipes path in
       (** The state of the interface, expressed as:

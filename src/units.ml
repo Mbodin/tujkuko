@@ -230,7 +230,7 @@ let usual_mass =
     List.filter (fun (_, e) -> e >= 3) prefixes in
   create_discontinued ~remove0:true Mass "usual" "kg" 1. [
       ("g", small_prefixes) ;
-      ("t", large_prefixes) ;
+      ("t", large_prefixes)
     ]
 
 (** Length units. *)
@@ -274,7 +274,24 @@ let liter_volume =
 let metric_time =
   create_metric Time "metric" "s" si_prefixes
 
-(* TODO: minutes, hours, days, annum. *)
+let usual_time =
+  let si_prefixes = List.filter (fun (_, e) -> e mod 3 = 0) si_prefixes in
+  let small_prefixes =
+    List.filter (fun (_, e) -> e <= 0) si_prefixes in
+  let large_prefixes =
+    List.filter (fun (_, e) -> e >= 3) si_prefixes in
+  let s =
+    create_discontinued ~remove0:true Time "usual" "s" 1. [
+        ("s", small_prefixes) ;
+        ("a", large_prefixes)
+      ] in
+  { s with higher_units = [
+          ("min", 60.) ;
+          ("h", 60.) ;
+          ("hr", 1.) ;
+          ("d", 24.) ;
+          ("a", 365.25)
+        ] @ s.higher_units }
 
 (** Temperature units. *)
 
@@ -349,6 +366,7 @@ let all_systems =
         metric_volume
       ] m in
   let m = PMap.add Time [
+        usual_time ;
         metric_time
       ] m in
   let m =
