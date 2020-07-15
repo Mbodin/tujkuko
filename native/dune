@@ -1,0 +1,7 @@
+
+(executable
+	(name main_native)
+	(libraries tujkuko blocklib.native lwt.unix)
+	(preprocess (pps lwt_ppx))
+	(modes native))
+

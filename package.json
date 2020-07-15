@@ -21,13 +21,14 @@
 		"@opam/uutf": "*",
 		"@opam/ppx_deriving": "*",
 		"@opam/lwt_ppx": "*",
-		"@opam/js_of_ocaml": "~3.6.0",
-		"@opam/js_of_ocaml-lwt": "~3.6.0",
+		"@opam/js_of_ocaml": "~3.5",
+		"@opam/js_of_ocaml-lwt": "~3.5",
 		"@opam/js_of_ocaml-ppx": "*",
 		"@opam/js_of_ocaml-ppx_deriving_json": "*",
 		"@opam/odoc": "*",
 		"@opam/ppx_inline_test": "*",
 		"ocaml": "~4.7",
-		"libutils": "github:Mbodin/libutils#5c210a5ad3bfd078cb27c5936cd3c2b2a6b7e8dd"
+		"libutils": "github:Mbodin/libutils#85dab5793de35a2524500f31eb85d66a665af2cd",
+		"blocklib": "github:Mbodin/blocklib#575908eda9bb3fd8a4de8e637f6da4fea87ff94e"
 	}
 }

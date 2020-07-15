@@ -1,5 +1,6 @@
 (** The main module. *)
 
+open Blocklib
 open Libutils
 open ExtList
 open ExtString

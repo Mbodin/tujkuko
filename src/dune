@@ -2,7 +2,7 @@
 (library
 	(public_name tujkuko)
 	(name tujkuko)
-	(libraries libutils extlib yojson lwt uutf re)
+	(libraries libutils extlib blocklib yojson lwt uutf re)
 	(preprocess (pps lwt_ppx ppx_deriving ppx_inline_test))
 	(modules_without_implementation recipe)
 	(inline_tests)
