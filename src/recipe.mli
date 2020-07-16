@@ -10,7 +10,7 @@ type language = string
    - if [0], this value is uncorrelated to the global factor,
    - if [1], this value is linear with the global factor,
    - more generally, if the global factor is multiplied by [n], then the value is
-     multiplied by [n^interpolation]. *)
+     multiplied by [n^interpolation]. (* TODO FIXME: This is wrong. *) *)
 type interpolation = int
 
 (** A step is a list of items. *)

@@ -39,6 +39,8 @@ type t = {
     big_unit : bool (** State whether the base of the system is smaller than the current unit. *)
   }
 
+type value = float * t
+
 let get_system_kind s = s.system_kind
 let get_kind u = get_system_kind u.unit_system
 
@@ -103,17 +105,16 @@ let rec convert_to_base (v, u) =
     let (v, u) = Utils.assert_option __LOC__ (f (v, u)) in
     convert_to_base (v, u)
 
-(** Normalise a pair value/unit within its own system. *)
-let rec simple_normalise (v, u) =
+let rec self_normalise (v, u) =
   if v < 1. then
     match decrease_unit_value (v, u) with
-    | Some (v, u) -> simple_normalise (v, u)
+    | Some (v, u) -> self_normalise (v, u)
     | None -> (v, u)
   else
     match u.unit_higher with
     | (_, q) :: _ when v > q ->
       let (v, u) = Utils.assert_option __LOC__ (increase_unit_value (v, u)) in
-      simple_normalise (v, u)
+      self_normalise (v, u)
     | _ -> (v, u)
 
 (** Convert a measure to the base metric value. *)
@@ -121,16 +122,34 @@ let to_metric (v, u) =
   let (v, u) = convert_to_base (v, u) in
   u.unit_system.base_shift +. v *. u.unit_system.base_value
 
+(** Convert a value to a (non-normalised) value to the provided unit system. *)
+let convert_to_system s (v, u) =
+  if s.system_id = u.unit_system.system_id then (v, u)
+  else
+    (** First, moving to metric. *)
+    let v = to_metric (v, u) in
+    (** Then converting to the new unit *)
+    ((v -. s.base_shift) /. s.base_value, get_base_unit s)
+
 let normalise s (v, u) =
-  (** First, convert to the same unit system. *)
-  let (v, u) =
-    if s.system_id = u.unit_system.system_id then (v, u)
-    else
-      (** First, moving to metric. *)
-      let v = to_metric (v, u) in
-      (** Then converting to the new unit *)
-      ((v -. s.base_shift) /. s.base_value, get_base_unit s) in
-  simple_normalise (v, u)
+  let (v, u) = convert_to_system s (v, u) in
+  self_normalise (v, u)
+
+let convert u' (v, u) =
+  let (v, u) = convert_to_system u'.unit_system (v, u) in
+  if print u = print u' then v
+  else
+    let shift =
+      if List.exists (fun (str, _) -> str = print u') u.unit_higher then
+        increase_unit_value
+      else decrease_unit_value in
+    let rec aux (v, u) =
+      match shift (v, u) with
+      | None -> assert false
+      | Some (v, u) ->
+        if print u = print u' then v
+        else aux (v, u) in
+    aux (v, u)
 
 (** List of metric prefixes and their associated exponent. *)
 let si_prefixes = [

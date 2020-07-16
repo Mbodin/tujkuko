@@ -10,8 +10,8 @@ then
 	LNF="cp -R"
 	shift
 else
-	LN="ln -s"
-	LNF="ln -s"
+	LN="ln -sf"
+	LNF="ln -sf"
 fi
 
 $LN ../_build/default/js/main.js main.js
@@ -19,7 +19,10 @@ $LN ../translations.json translations.json
 
 if [ ! -e doc ]
 then
-	$LNF ../_build/default/_doc/_html doc
+	if [ -e ../_build/default/_doc/_html ]
+	then
+		$LNF ../_build/default/_doc/_html doc
+	fi
 fi
 
 if [ ! -e data ]

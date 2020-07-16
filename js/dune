@@ -3,6 +3,7 @@
 	(name main_js)
 	(libraries tujkuko blocklib.js js_of_ocaml-lwt)
 	(preprocess (pps lwt_ppx js_of_ocaml-ppx))
+	; (js_of_ocaml (flags --pretty))
 	(modes js))
 
 (rule

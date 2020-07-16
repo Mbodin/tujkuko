@@ -4,6 +4,9 @@
    Note that it might include some metric prefix. *)
 type t
 
+(** A value with a unit. *)
+type value = float * t
+
 (** Parse a unit from a string, retuning [None] in case no unit is recognised. *)
 val parse : string -> t option
 
@@ -43,16 +46,23 @@ val all_systems : (kind, system list) PMap.t
 exception InvalidKind
 
 (** Given a unit system, normalise a value.
-   Raises [InvalidKind] if the system kind does not corresponds to the given unit kind. *)
-val normalise : system -> float * t -> float * t
+   Raises [InvalidKind] if the system kind does not correspond to the given unit kind. *)
+val normalise : system -> value -> value
+
+(** Same as [normalise], but uses the value’s system. *)
+val self_normalise : value -> value
+
+(** Given a unit and a value, convert the value to this particular unit.
+   Raises [InvalidKind] if the value and the unit do not correspond to the same unit kind. *)
+val convert : t -> value -> float
 
 (** Given a value and a unit, use a higher unit to represent the value.
    Return [None] if there is no higher avalaible units in the current unit system. *)
-val increase_unit_value : float * t -> (float * t) option
+val increase_unit_value : value -> value option
 
 (** Given a value and a unit, use a lower unit to represent the value.
    Return [None] if there is no lower avalaible units in the current unit system. *)
-val decrease_unit_value : float * t -> (float * t) option
+val decrease_unit_value : value -> value option
 
 (* TODO: Import/Export functions *)
 

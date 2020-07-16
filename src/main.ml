@@ -109,10 +109,51 @@ let main =
       let%lwt recipes = recipes in
       (** Generate a node given a [Recipe.step]. *)
       let step_to_node s =
+        let normalise minv maxv v =
+          ignore (minv, maxv) (* TODO: Some kind of simplifications for [value] *) ;
+          v in
         let item_to_block = function
           | Recipe.Sentence str -> InOut.Text str
-          | Recipe.Unit (min, max, correlation, u) ->
-            ignore (min, max, correlation, u) ; InOut.Text "" (* TODO *) in
+          | Recipe.Unit (min, max, correlation, None) ->
+            let value = (min +. max) /. 2. in
+            let value = normalise min max value in
+            let node =
+              if min = max then
+                let (node, _set_node) = IO.createFloatOutput value in
+                IO.block_node (InOut.Sequence [
+                  InOut.Text " " ;
+                  InOut.Node node ;
+                  InOut.Text " " ])
+              else (
+                let interaction = IO.createFloatInput ~min ~max value in
+                interaction.IO.onChange ignore ; ignore correlation (* TODO: Use [node.onChange] to adapt the interpolation factor. *) ;
+                interaction.node
+              ) in
+            InOut.Node node
+          | Recipe.Unit (min, max, correlation, Some u0) ->
+            let value = (min +. max) /. 2. in
+            let value_node =
+              if min = max then
+                let (value_node, _set_node) = IO.createFloatOutput value in
+                IO.block_node (InOut.Sequence [
+                  InOut.Text " " ;
+                  InOut.Node value_node ;
+                  InOut.Text " " ])
+              else (
+                let (value_node, set_min, set_max) = IO.createControlableFloatInput value in
+                let set value =
+                  let (value, u) = Units.self_normalise (value, u0) in
+                  let value = normalise min max value in
+                  let min = Units.convert u (min, u0) in
+                  let max = Units.convert u (max, u0) in
+                  ignore (min, max, value, set_min, set_max) (* TODO *) ;
+                  () in
+                set value ;
+                value_node.IO.onChange ignore (* TODO *) ;
+                value_node.IO.node
+              ) in
+            ignore correlation (* TODO *) ;
+            InOut.Node value_node (* TODO *) in
         IO.block_node (InOut.P (List.map item_to_block s)) in
       let (initial_nav_state, initial_infos) = Navigation.init recipes path in
       (** The state of the interface, expressed as:
@@ -169,7 +210,7 @@ let main =
         IO.controlableNode (IO.block_node InOut.Space) in
       let update_hints hint_list =
         update_hints (IO.block_node (InOut.List (false,
-          List.map (fun n -> [ InOut.Div (InOut.Normal, [], [ InOut.Node n ]) ]) hint_list))) in
+          List.map (fun n -> InOut.Div (InOut.Normal, [], [ InOut.Node n ])) hint_list))) in
       IO.print_block  ~kind:InOut.RawResponse
         (InOut.Div (InOut.Normal, ["hints"], [ InOut.Node hints ])) ;
       (** The node storing the next possible steps. *)
@@ -217,7 +258,7 @@ let main =
                       (** This step is a final one. *)
                       IO.addClass ["finalStep"] n
                     | Some _ -> n in
-                  Some [ InOut.Node n ]) l) in
+                  Some (InOut.Node n)) l) in
         update_next (IO.block_node next)
       (** Move one step up the tree. *)
       and move_up _ =
@@ -245,6 +286,13 @@ let main =
         let step =
           try PMap.find lg info.Recipe.description
           with Not_found -> assert false in
+        (** We consider that values have been chosen and are now fixed. *)
+        let step =
+          List.map (function
+            | Recipe.Unit (min, max, correlation, u) ->
+              let value = (min +. max) /. 2. (* TODO: Use factor here. *) in
+              Recipe.Unit (value, value, correlation, u)
+            | item -> item) step in
         let p = step_to_node step in
         let p = IO.clickableNode p in
         let remove_p = add_past p.IO.node in
@@ -280,9 +328,9 @@ let main =
       IO.print_block (InOut.Div (InOut.Normal, [], [
           InOut.P [ InOut.Text (get_translation "listOfSaveMethods") ] ;
           InOut.List (true, [
-              [ InOut.LinkFile (InOut.Button true, get_translation "methodJSONButton",
-                  "recipes.json", "application/json", true, (fun _ -> Export.to_json t)) ;
-                InOut.Text (get_translation "methodJSON") ]
+              InOut.LinkFile (InOut.Button true, get_translation "methodJSONButton",
+                "recipes.json", "application/json", true, (fun _ -> Export.to_json t)) ;
+              InOut.Text (get_translation "methodJSON")
             ])
         ])) ;
       IO.print_block ~kind:InOut.ErrorResponse (InOut.Text ("TODO")) (* TODO *) ;
