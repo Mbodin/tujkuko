@@ -42,8 +42,8 @@ type t = {
 type value = float * t
 
 let get_system_kind s = s.system_kind
-let get_kind u = get_system_kind u.unit_system
-
+let get_system u = u.unit_system
+let get_kind u = get_system_kind (get_system u)
 let print u = u.unit_notation
 
 let get_base_unit s = {
@@ -398,6 +398,14 @@ let all_systems =
         gas_mark
       ] m in
   m
+
+let parse_system name =
+  PMap.fold (fun l -> function
+    | Some s -> Some s
+    | None ->
+      List.fold_left (function
+        | Some s -> fun _ -> Some s
+        | None -> fun s -> if system_name s = name then Some s else None) None l) all_systems None
 
 let%test _ =
   (** System names are unique. *)

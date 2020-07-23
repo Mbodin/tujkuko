@@ -30,11 +30,17 @@ type system
 (** Get a name for a system. *)
 val system_name : system -> string
 
+(** Inverse of [system_name]. *)
+val parse_system : string -> system option
+
 (** Each system is only made for a specific kind of units. *)
 val get_system_kind : system -> kind
 
-(** Given a system, returns its base unit. *)
+(** Given a system, return its base unit. *)
 val get_base_unit : system -> t
+
+(** Given a unit, return its associated system. *)
+val get_system : t -> system
 
 (** All the units defined in a system. *)
 val system_units : system -> t list

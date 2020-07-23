@@ -130,30 +130,86 @@ let main =
                 interaction.node
               ) in
             InOut.Node node
+          | Recipe.Unit (min, max, correlation, Some u) when min = max ->
+            let value = min in
+            let (value_node, _set_node) = IO.createFloatOutput value in
+            InOut.Sequence [
+                InOut.Text " " ;
+                InOut.Node value_node ;
+                InOut.Text " " ;
+                InOut.Text (Units.print u) ;
+                InOut.Text " "
+              ]
           | Recipe.Unit (min, max, correlation, Some u0) ->
             let value = (min +. max) /. 2. in
+            let current_unit = ref u0 in
+            let unit_systems =
+              let kind = Units.get_kind u0 in
+              try PMap.find kind Units.all_systems
+              with Not_found -> assert false in
+            let (unit_interaction, update_units) =
+              let (interaction, update) =
+                IO.createControlableListInput
+                  (List.map (fun s ->
+                    let u = Units.get_base_unit s in
+                    (Units.system_name s, Some (Units.print u), s)) unit_systems) in
+              (interaction, fun f ->
+                (** First, we update the current system, if any. *)
+                let (initial_set, check) =
+                  match interaction.IO.get () with
+                  | None -> (PSet.empty, fun _ -> false)
+                  | Some current_system ->
+                    let name = f current_system in
+                    let current_system = Units.system_name current_system in
+                    update current_system (Some name) ;
+                    (PSet.singleton name, fun s -> Units.system_name s = current_system) in
+                ignore (List.fold_left (fun set s ->
+                  if check s then
+                    (** We have already taken care of the current system. *)
+                    set
+                  else
+                    let name = f s in
+                    let s = Units.system_name s in
+                    if PSet.mem name set then (
+                      (** This name has already been taken! *)
+                      update s None ;
+                      set
+                    ) else (
+                      update s (Some name) ;
+                      PSet.add name set
+                    )) initial_set unit_systems)) in
             let value_node =
-              if min = max then
-                let (value_node, _set_node) = IO.createFloatOutput value in
-                IO.block_node (InOut.Sequence [
-                  InOut.Text " " ;
-                  InOut.Node value_node ;
-                  InOut.Text " " ])
-              else (
-                let (value_node, set_min, set_max) = IO.createControlableFloatInput value in
-                let set value =
-                  let (value, u) = Units.self_normalise (value, u0) in
-                  let value = normalise min max value in
-                  let min = Units.convert u (min, u0) in
-                  let max = Units.convert u (max, u0) in
-                  ignore (min, max, value, set_min, set_max) (* TODO *) ;
-                  () in
-                set value ;
-                value_node.IO.onChange ignore (* TODO *) ;
-                value_node.IO.node
-              ) in
+              let (value_node, set_min, set_max) = IO.createControlableFloatInput value in
+              let update_units (value, u) =
+                update_units (fun s ->
+                  let (_, u) = Units.normalise s (value, u) in
+                  Units.print u) in
+              let set value =
+                let (value, u) = Units.self_normalise (value, !current_unit) in
+                let value = normalise min max value in
+                let min = Units.convert u (min, u0) in
+                let max = Units.convert u (max, u0) in
+                set_min min ;
+                set_max max ;
+                value_node.IO.set value ;
+                update_units (value, u) ;
+                current_unit := u in
+              set value ;
+              value_node.IO.onChange set ;
+              unit_interaction.IO.onChange (function
+                | None -> ()
+                | Some system_name ->
+                  match Units.parse_system system_name with
+                  | None -> ()
+                  | Some s ->
+                    let value = value_node.IO.get () in
+                    let (value, u) = Units.normalise s (value, !current_unit) in
+                    current_unit := u ;
+                    update_units (value, u) ;
+                    set value) ;
+              value_node.IO.node in
             ignore correlation (* TODO *) ;
-            InOut.Node value_node (* TODO *) in
+            InOut.Sequence [ InOut.Node value_node ; InOut.Node unit_interaction.IO.node ] in
         IO.block_node (InOut.P (List.map item_to_block s)) in
       let (initial_nav_state, initial_infos) = Navigation.init recipes path in
       (** The state of the interface, expressed as:
