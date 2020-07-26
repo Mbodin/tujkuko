@@ -1,5 +1,5 @@
 {
-  "checksum": "29f0b66278ad8584f3ae027ec06e52ee",
+  "checksum": "4570f8a11ff28132079212ad5d9fa89b",
   "root": "tujkuko@link-dev:./package.json",
   "node": {
     "tujkuko@link-dev:./package.json": {
@@ -15,7 +15,7 @@
       "dependencies": [
         "ocaml@4.10.0@d41d8cd9",
         "libutils@github:Mbodin/libutils#9e788308249b1e7477ebe86f742163603ab9b0ce@d41d8cd9",
-        "blocklib@github:Mbodin/blocklib#90c1ec754d8227a2fe04ca4ca47797d33497b025@d41d8cd9",
+        "blocklib@github:Mbodin/blocklib#c883871db2d3e15b9559d798b1013e65970a5211@d41d8cd9",
         "@opam/yojson@opam:1.7.0@7056d985", "@opam/uutf@opam:1.0.2@4440868f",
         "@opam/re@opam:1.9.0@d4d5e13d",
         "@opam/ppx_inline_test@opam:v0.13.1@dbfe49b7",
@@ -64,16 +64,16 @@
       ],
       "devDependencies": []
     },
-    "blocklib@github:Mbodin/blocklib#90c1ec754d8227a2fe04ca4ca47797d33497b025@d41d8cd9": {
+    "blocklib@github:Mbodin/blocklib#c883871db2d3e15b9559d798b1013e65970a5211@d41d8cd9": {
       "id":
-        "blocklib@github:Mbodin/blocklib#90c1ec754d8227a2fe04ca4ca47797d33497b025@d41d8cd9",
+        "blocklib@github:Mbodin/blocklib#c883871db2d3e15b9559d798b1013e65970a5211@d41d8cd9",
       "name": "blocklib",
       "version":
-        "github:Mbodin/blocklib#90c1ec754d8227a2fe04ca4ca47797d33497b025",
+        "github:Mbodin/blocklib#c883871db2d3e15b9559d798b1013e65970a5211",
       "source": {
         "type": "install",
         "source": [
-          "github:Mbodin/blocklib#90c1ec754d8227a2fe04ca4ca47797d33497b025"
+          "github:Mbodin/blocklib#c883871db2d3e15b9559d798b1013e65970a5211"
         ]
       },
       "overrides": [],

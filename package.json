@@ -29,6 +29,6 @@
 		"@opam/ppx_inline_test": "*",
 		"ocaml": "*",
 		"libutils": "github:Mbodin/libutils#9e788308249b1e7477ebe86f742163603ab9b0ce",
-		"blocklib": "github:Mbodin/blocklib#90c1ec754d8227a2fe04ca4ca47797d33497b025"
+		"blocklib": "github:Mbodin/blocklib#c883871db2d3e15b9559d798b1013e65970a5211"
 	}
 }

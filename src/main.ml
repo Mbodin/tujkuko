@@ -153,6 +153,7 @@ let main =
                   (List.map (fun s ->
                     let u = Units.get_base_unit s in
                     (Units.system_name s, Some (Units.print u), s)) unit_systems) in
+              interaction.IO.set (Some (Units.system_name (Units.get_system !current_unit))) ;
               (interaction, fun f ->
                 (** First, we update the current system, if any. *)
                 let (initial_set, check) =

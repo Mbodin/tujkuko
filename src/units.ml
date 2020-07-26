@@ -19,7 +19,7 @@ type system = {
     system_kind : kind (** The kind of the unit system. *) ;
     base_value : float
       (** How the base value relates to the corresponding base value of the metric system. *) ;
-    base_shift : float (** An eventual shift in the zero value. *) ;
+    base_shift : float (** An eventual shift in the zero value, expressed in the metric system. *) ;
     base_notation : string (** The notation of the base unit of this unit system. *) ;
     higher_units : (string * float) list
       (** A list of pairs [(name, value)].
@@ -105,17 +105,21 @@ let rec convert_to_base (v, u) =
     let (v, u) = Utils.assert_option __LOC__ (f (v, u)) in
     convert_to_base (v, u)
 
-let rec self_normalise (v, u) =
-  if v < 1. then
-    match decrease_unit_value (v, u) with
-    | Some (v, u) -> self_normalise (v, u)
-    | None -> (v, u)
-  else
-    match u.unit_higher with
-    | (_, q) :: _ when v > q ->
-      let (v, u) = Utils.assert_option __LOC__ (increase_unit_value (v, u)) in
-      self_normalise (v, u)
-    | _ -> (v, u)
+let self_normalise (v, u) =
+  let rec aux (v, u) =
+    if v < 1. then
+      match decrease_unit_value (v, u) with
+      | Some (v, u) -> aux (v, u)
+      | None -> (v, u)
+    else
+      match u.unit_higher with
+      | (_, q) :: _ when v > q ->
+        let (v, u) = Utils.assert_option __LOC__ (increase_unit_value (v, u)) in
+        aux (v, u)
+      | _ -> (v, u) in
+  if v = 0. then
+    (0., get_base_unit (get_system u))
+  else aux (v, u)
 
 (** Convert a measure to the base metric value. *)
 let to_metric (v, u) =
@@ -332,7 +336,7 @@ let fahrenheit = {
     system_kind = Temperature ;
     base_notation = "°F" ;
     base_value = 0.55555555555555558 ;
-    base_shift = 459.67 ;
+    base_shift = 255.372222 ;
     higher_units = [] ;
     lower_units = []
   }
