@@ -80,7 +80,7 @@
 						"en": [
 							"length:", {"kind": "unit", "min": 0.000000000000000001, "max": 30000000000000.0, "correlation": -3, "unit": true, "notation": "mm"},
 							"mass:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "g"},
-							"volume:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "l"},
+							"volume:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "ℓ"},
 							"temperature:", {"kind": "unit", "min": 150.0, "max": 200.0, "correlation": 0, "unit": true, "notation": "°C"},
 							"time:", {"kind": "unit", "min": 1200.0, "max": 1500.0, "correlation": 0, "unit": true, "notation": "s"},
 							"unitless:", {"kind": "unit", "min": 3.0, "max": 15.0, "correlation": 1, "unit": false}
@@ -88,7 +88,7 @@
 						"eo": [
 							"longeco:", {"kind": "unit", "min": 0.000000000000000001, "max": 30000000000000.0, "correlation": -3, "unit": true, "notation": "mm"},
 							"maso:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "g"},
-							"volumo:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "l"},
+							"volumo:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "ℓ"},
 							"temperaturo:", {"kind": "unit", "min": 150.0, "max": 200.0, "correlation": 0, "unit": true, "notation": "°C"},
 							"tempo:", {"kind": "unit", "min": 1200.0, "max": 1500.0, "correlation": 0, "unit": true, "notation": "s"},
 							"senunua:", {"kind": "unit", "min": 3.0, "max": 15.0, "correlation": 1, "unit": false}
@@ -96,7 +96,7 @@
 						"fr": [
 							"longueur :", {"kind": "unit", "min": 0.000000000000000001, "max": 30000000000000.0, "correlation": -3, "unit": true, "notation": "mm"},
 							"masse :", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "g"},
-							"volume :", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "l"},
+							"volume :", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": 1, "unit": true, "notation": "ℓ"},
 							"temperature :", {"kind": "unit", "min": 150.0, "max": 200.0, "correlation": 0, "unit": true, "notation": "°C"},
 							"temps :", {"kind": "unit", "min": 1200.0, "max": 1500.0, "correlation": 0, "unit": true, "notation": "s"},
 							"sans unité :", {"kind": "unit", "min": 3.5, "max": 15.0, "correlation": 1, "unit": false}

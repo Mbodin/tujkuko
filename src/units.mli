@@ -7,8 +7,15 @@ type t
 (** A value with a unit. *)
 type value = float * t
 
-(** Parse a unit from a string, retuning [None] in case no unit is recognised. *)
+(** Parse a unit from a string, retuning [None] in case no unit is recognised.
+ This function follows the standard notations (for instance, [min] for minutes, and not [m]. *)
 val parse : string -> t option
+
+(** Parse a unit from a user string.
+ This is less strict than [parse] and will accept [m] for minutes (although meters will also
+ be returned).
+ The first element of the list is the prefered one (typically the one returned by [parse]). *)
+val parse_list : string -> t list
 
 (** Print the unit. *)
 val print : t -> string
@@ -70,5 +77,5 @@ val increase_unit_value : value -> value option
    Return [None] if there is no lower avalaible units in the current unit system. *)
 val decrease_unit_value : value -> value option
 
-(* TODO: Import/Export functions *)
+(* TODO: Import/Export functions with values? *)
 

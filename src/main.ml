@@ -132,6 +132,7 @@ let main =
             InOut.Node node
           | Recipe.Unit (min, max, correlation, Some u) when min = max ->
             let value = min in
+            ignore correlation (* TODO *) ;
             let (value_node, _set_node) = IO.createFloatOutput value in
             InOut.Sequence [
                 InOut.Text " " ;
