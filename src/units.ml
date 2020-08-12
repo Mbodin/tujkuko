@@ -1,6 +1,8 @@
 
 open Libutils
 
+(** * Type declarations *)
+
 type kind =
   | Mass
   | Length
@@ -46,6 +48,8 @@ type t = {
     big_unit : bool (** State whether the base of the system is smaller than the current unit. *)
   }
 
+(** * Basic manipulations *)
+
 type value = float * t
 
 let get_system_kind s = s.system_kind
@@ -70,6 +74,8 @@ let kind_name = function
 
 let system_name s =
   Printf.sprintf "%s-%s" s.system_id (kind_name s.system_kind)
+
+(** * Conversions *)
 
 let increase_unit_value (v, u) =
   match u.unit_higher with
@@ -162,6 +168,12 @@ let convert u' (v, u) =
         else aux (v, u) in
     aux (v, u)
 
+(** * Functions to create units *)
+
+(** ** Exponential *)
+
+(** The following functions are mostly based on exponential scales. *)
+
 (** List of metric prefixes and their associated exponent. *)
 let si_prefixes = [
     ("Y", 24) ;
@@ -198,6 +210,16 @@ let notation_base = function
 
 (** A smart constructor for when we just need to provide a list of notations. *)
 let direct_notation l = notation_base l ""
+
+(** Inverse [direct_notation]. *)
+let inverse_direct_notation n =
+  n.main_notation :: n.alternative_notations
+
+let%test_unit _ =
+  let test l = assert (inverse_direct_notation (direct_notation l) = l) in
+  test ["m"] ;
+  test ["m³" ; "m^3"] ;
+  test ["a" ; "b" ; "c"]
 
 (** Given a list of notations and associated exponents,
    this function return a pair of lists, one for the higher units, and
@@ -266,8 +288,65 @@ let create_discontinued ?(remove0=false) kind name base value l =
     lower_units = lower
   }
 
+(** ** Absolutes *)
 
-(** All the metric systems. *)
+(** The above functions are mostly based on exponential values (and in particularly, base 10).
+   The following functions are based on absolute values. *)
+
+(** Given a list of pairs of notation and absolute values (in any coherent unit), generate the
+   lower and higher lists.
+   It takes as argument the base value used as the reference unit.
+   This is thus similar to [create_base10_unit], but with absolute units. *)
+(* TODO: Factorise with [create_base10_unit]. *)
+let create_absolute base_value notval =
+  let (low, high) = List.partition (fun (_, v) -> v <= base_value) notval in
+  let low = List.sort (fun (_, i1) (_, i2) -> - compare i1 i2) low in
+  let low =
+    let rec aux current acc = function
+      | [] -> List.rev acc
+      | (notation, value) :: low ->
+        let dvalue = current /. value in
+        aux value ((dvalue, notation) :: acc) low in
+    aux base_value [] low in
+  let high = List.sort (fun (_, i1) (_, i2) -> compare i1 i2) high in
+  let high =
+    let rec aux current acc = function
+      | [] -> List.rev acc
+      | (notation, value) :: high ->
+        let dvalue = value /. current in
+        aux value ((notation, dvalue) :: acc) high in
+    aux base_value [] high in
+  (low, high)
+
+(** Given a list of units and their absolute values, as well as a kind, a name, and a base value,
+   create a unit system with all these units. *)
+(* TODO: Factorise [create_metric], [create_discontinued], [create_from_absolute_list],
+   and [create_from_absolutes]. *)
+let create_from_absolute_list kind name base base_value notval =
+  let (lower, higher) = create_absolute base_value notval in {
+    system_id = name ;
+    system_kind = kind ;
+    base_notation = direct_notation base ;
+    base_value = base_value ;
+    base_shift = 0. ;
+    higher_units = higher ;
+    lower_units = lower
+  }
+
+(** Similarly to [create_from_absolute_list], but the base unit is simply taken from the unit
+   associated to [1.] in the list.
+   This means that the list is provided relative to the base unit of the system.
+   An additional value is provided to explain what the actual metric value of this base unit is. *)
+let create_from_absolutes kind name value notval =
+  match List.find_opt (fun (_, v) -> v = 1.) notval with
+  | None -> assert false
+  | Some (u, _) ->
+    let notval = List.filter (fun (_, v) -> v <> 1.) notval in
+    let u = inverse_direct_notation u in
+    let s = create_from_absolute_list kind name u 1. notval in
+    { s with base_value = value }
+
+(** * System definitions. *)
 
 (** Mass units. *)
 
@@ -311,6 +390,17 @@ let usual_length =
                 (direct_notation ["ly"], 63_241.) (** Light year *) ;
               ] }
 
+let imperial_length =
+  create_from_absolute_list Length "imperial" ["yd"] 0.9144 (** yard *) [
+      (direct_notation ["th"], 0.000_0254) (** thou *) ;
+      (direct_notation ["″"; "in"; "\""], 0.0254) (** inch *) ;
+      (direct_notation ["′"; "ft"; "'"], 0.3048) (** foot *) ;
+      (direct_notation ["ch"], 20.1168) (** chain *) ;
+      (direct_notation ["fur"], 201.168) (** furlong *) ;
+      (direct_notation ["mi"], 1_609.344) (** mile *) ;
+      (direct_notation ["lea"], 4_828.032) (** league *) ;
+    ]
+
 (** Volume units. *)
 
 let metric_volume =
@@ -329,7 +419,25 @@ let liter_volume =
       (l, List.filter (fun (_, e) -> e <> 0) liter_prefixes)
     ]
 
-(* TODO: common devices (spoons, cups, etc.). *)
+(** Common cooking devices *)
+let devices_volume =
+  (** Each time there is a conflict, the metric version is used: the tablespoon here means
+     the metric tablespoon. *)
+  create_from_absolute_list Volume "devices" ["tbsp"; "tbs"] 0.000_015 (** tablespoon *) [
+      (direct_notation ["teasp" ; "tsp"], 0.000_005) (** teaspoon *) ;
+      (direct_notation ["dstspn"], 0.000_010) (** dessert spoon *) ;
+      (direct_notation ["cup"; "c"], 0.000_250) (** cup *) ;
+      (direct_notation ["TEU"], 33.2) (** twenty-foot equivalent unit *) ;
+    ]
+
+let imperial_volume =
+  create_from_absolutes Volume "imperial" 0.000_028_4130625 [
+      (direct_notation ["fl oz"; "℥"; "fl ℥"; "f℥"; "ƒ ℥"], 1.) (** fluid ounce *) ;
+      (direct_notation ["gi"], 5.) (** gill *) ;
+      (direct_notation ["pt"; "O"; "p"], 20.) (** pint *) ;
+      (direct_notation ["qt"], 40.) (** quart *) ;
+      (direct_notation ["gal"; "C"], 160.) (** gallon *) ;
+    ]
 
 (** Time units. *)
 
@@ -420,12 +528,15 @@ let all_systems =
   let m =
     PMap.add Length [
         usual_length ;
-        metric_length
+        metric_length ;
+        imperial_length
       ] m in
   let m =
     PMap.add Volume [
         liter_volume ;
-        metric_volume
+        metric_volume ;
+        devices_volume ;
+        imperial_volume
       ] m in
   let m = PMap.add Time [
         usual_time ;
@@ -442,13 +553,7 @@ let all_systems =
       ] m in
   m
 
-let parse_system name =
-  PMap.fold (fun l -> function
-    | Some s -> Some s
-    | None ->
-      List.fold_left (function
-        | Some s -> fun _ -> Some s
-        | None -> fun s -> if system_name s = name then Some s else None) None l) all_systems None
+(** * Tests *)
 
 let%test _ =
   (** System names are unique. *)
@@ -503,52 +608,67 @@ let%test_unit _ =
           ) else PMap.add (print u) (u, s) units)
         units (system_units s)) units l) all_systems PMap.empty)
 
+(** * Parsing *)
+
+let parse_system name =
+  PMap.fold (fun l -> function
+    | Some s -> Some s
+    | None ->
+      List.fold_left (function
+        | Some s -> fun _ -> Some s
+        | None -> fun s -> if system_name s = name then Some s else None) None l) all_systems None
+
 (** Given a notation and a string, return a boolean is the string matches the notation. *)
 let recognise_notation notation str =
   List.mem str (notation.main_notation :: notation.alternative_notations)
 
 let parse_list str =
   let str = String.trim str in
-  PMap.fold (fun l others ->
-    List.fold_left (fun others s ->
-      let others =
-        if recognise_notation s.base_notation str then
-          (get_base_unit s) :: others
-        else others in
-      let rec aux others current higher = function
-        | [] -> others
-        | (q, b) :: lower ->
-          let higher = (current, q) :: higher in
-          let others =
-            if recognise_notation b str then {
-                unit_notation = b ;
-                unit_system = s ;
-                unit_higher = higher ;
-                unit_lower = lower ;
-                big_unit = false
-              } :: others
-            else others in
-          aux others b higher lower in
-      let others = aux others s.base_notation s.higher_units s.lower_units in
-      let rec aux others current lower = function
-        | [] -> others
-        | (b, q) :: higher ->
-          let lower = (q, current) :: lower in
-          let others =
-            if recognise_notation b str then {
-                unit_notation = b ;
-                unit_system = s ;
-                unit_higher = higher ;
-                unit_lower = lower ;
-                big_unit = true
-              } :: others
-            else others in
-          aux others b lower higher in
-        aux others s.base_notation s.lower_units s.higher_units) others l) all_systems []
+  let l =
+    PMap.fold (fun l others ->
+      List.fold_left (fun others s ->
+        let others =
+          if recognise_notation s.base_notation str then
+            (get_base_unit s) :: others
+          else others in
+        let rec aux others current higher = function
+          | [] -> others
+          | (q, b) :: lower ->
+            let higher = (current, q) :: higher in
+            let others =
+              if recognise_notation b str then {
+                  unit_notation = b ;
+                  unit_system = s ;
+                  unit_higher = higher ;
+                  unit_lower = lower ;
+                  big_unit = false
+                } :: others
+              else others in
+            aux others b higher lower in
+        let others = aux others s.base_notation s.higher_units s.lower_units in
+        let rec aux others current lower = function
+          | [] -> others
+          | (b, q) :: higher ->
+            let lower = (q, current) :: lower in
+            let others =
+              if recognise_notation b str then {
+                  unit_notation = b ;
+                  unit_system = s ;
+                  unit_higher = higher ;
+                  unit_lower = lower ;
+                  big_unit = true
+                } :: others
+              else others in
+            aux others b lower higher in
+          aux others s.base_notation s.lower_units s.higher_units) others l) all_systems [] in
+  (** Now that we have the list of units that get recognised, we place the exact matches first. *)
+  let (exact, alternative) = List.partition (fun u -> u.unit_notation.main_notation = str) l in
+  exact @ alternative
 
 let parse str =
-  let l = parse_list str in
-  match List.filter (fun u -> u.unit_notation.main_notation = str) l with
+  match parse_list str with
   | [] -> None
-  | u :: _ -> Some u
+  | u :: _ ->
+    (** Because [parse_list] already sorts them, we only need to check the first item. *)
+    if u.unit_notation.main_notation = str then Some u else None
 
