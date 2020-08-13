@@ -30,7 +30,7 @@ let get_field_float ctx fld l =
   | `Float f -> f
   | _ -> failwith (ctx ^ ", get_field_float: not a number")
 
-let get_field_int ctx fld l =
+let _get_field_int ctx fld l =
   match get_field (ctx ^ ", get_field_int") fld l with
   | `Int i -> i
   | _ -> failwith (ctx ^ ", get_field_int: not an integer")
@@ -54,8 +54,9 @@ let read_item = function
     (match get_field_string "read_item" "kind" l with
      | "unit" ->
        let get_field_float f = get_field_float "read_item" f l in
+       let correlation = Interpolation.import (get_field "read_item" "correlation" l) in
        Recipe.Unit (get_field_float "min", get_field_float "max",
-                    get_field_int "read_item" "correlation" l, read_unit l)
+                    correlation, read_unit l)
      | str -> failwith ("read_item: unknown kind: " ^ str))
   | _ -> failwith "read_item: unexpected argument"
 

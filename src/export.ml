@@ -8,7 +8,7 @@ let print_item = function
         ("kind", `String "unit") ;
         ("min", `Float min) ;
         ("max", `Float max) ;
-        ("correlation", `Int correlation)
+        ("correlation", Interpolation.export correlation)
       ] @
         match u with
         | None -> [("unit", `Bool false)]

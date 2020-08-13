@@ -1,6 +1,7 @@
 (** Importing recipes. *)
 
-(** Import recipes from a JSON file. *)
+(** Import recipes from a JSON file.
+   May raise [Invalid_arg]. *)
 val from_json : string -> Recipe.t
 
 (** [import_translations fileName fileContent] reads [fileContent] as a
