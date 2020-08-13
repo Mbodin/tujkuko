@@ -375,6 +375,16 @@ let usual_mass =
                 (direct_notation ["M_☉"; "M☉"], 1_047.348644) (** Solar mass *) ;
               ] }
 
+let imperial_mass =
+  create_from_absolute_list Mass "imperial" ["lb"; "#"] 0.453_592_37 (** pound *) [
+      (direct_notation ["gr"], 0.000_064_798_91) (** grain *) ;
+      (direct_notation ["dr"], 0.001_771_845_195_3125) (** drachm *) ;
+      (direct_notation ["oz"], 0.028_349_523_125) (** ounce *) ;
+      (direct_notation ["st"], 6.350_293_18) (** stone *) ;
+      (direct_notation ["qr"; "qtr"], 12.700_586_36) (** quarter *) ;
+      (direct_notation ["cwt"], 50.802_345_44) (** hundredweight *) ;
+    ]
+
 (** Length units. *)
 
 let metric_length =
@@ -393,7 +403,7 @@ let usual_length =
 let imperial_length =
   create_from_absolute_list Length "imperial" ["yd"] 0.9144 (** yard *) [
       (direct_notation ["th"], 0.000_0254) (** thou *) ;
-      (direct_notation ["″"; "in"; "\""], 0.0254) (** inch *) ;
+      (direct_notation ["″"; "in"; "inch"; "\""], 0.0254) (** inch *) ;
       (direct_notation ["′"; "ft"; "'"], 0.3048) (** foot *) ;
       (direct_notation ["ch"], 20.1168) (** chain *) ;
       (direct_notation ["fur"], 201.168) (** furlong *) ;
@@ -423,10 +433,11 @@ let liter_volume =
 let devices_volume =
   (** Each time there is a conflict, the metric version is used: the tablespoon here means
      the metric tablespoon. *)
-  create_from_absolute_list Volume "devices" ["tbsp"; "tbs"] 0.000_015 (** tablespoon *) [
-      (direct_notation ["teasp" ; "tsp"], 0.000_005) (** teaspoon *) ;
-      (direct_notation ["dstspn"], 0.000_010) (** dessert spoon *) ;
-      (direct_notation ["cup"; "c"], 0.000_250) (** cup *) ;
+  create_from_absolute_list Volume "devices" ["tbsp"; "tbs"; "TB"; "T"; "EL"] 0.000_015 (** tablespoon *) [
+      (direct_notation ["ssp"], 0.000_001_2) (** saltspoon *) ;
+      (direct_notation ["teasp" ; "tsp"; "t"; "TL"; "csp"], 0.000_005) (** teaspoon *) ;
+      (direct_notation ["dessertspoon"; "dstspn"; "dsp"], 0.000_010) (** dessert spoon *) ;
+      (direct_notation ["cup"; "c"; "C"], 0.000_250) (** cup *) ;
       (direct_notation ["TEU"], 33.2) (** twenty-foot equivalent unit *) ;
     ]
 
@@ -437,6 +448,8 @@ let imperial_volume =
       (direct_notation ["pt"; "O"; "p"], 20.) (** pint *) ;
       (direct_notation ["qt"], 40.) (** quart *) ;
       (direct_notation ["gal"; "C"], 160.) (** gallon *) ;
+      (direct_notation ["pk"], 360.) (** peck *) ;
+      (direct_notation ["bu"], 2790.) (** bushel *) ;
     ]
 
 (** Time units. *)
@@ -488,6 +501,46 @@ let fahrenheit = {
     lower_units = []
   }
 
+let reaumur = {
+    system_id = "reaumur" ;
+    system_kind = Temperature ;
+    base_notation = direct_notation ["°Ré"; "°r"] ;
+    base_value = 1.25 ;
+    base_shift = 218.52 ;
+    higher_units = [] ;
+    lower_units = []
+  }
+
+let leyden = {
+    system_id = "leyden" ;
+    system_kind = Temperature ;
+    base_notation = direct_notation ["°L"] ;
+    base_value = 1. ;
+    base_shift = 20.15 ;
+    higher_units = [] ;
+    lower_units = []
+  }
+
+let rankine = {
+    system_id = "rankine" ;
+    system_kind = Temperature ;
+    base_notation = direct_notation ["°Ra"; "°R"] ;
+    base_value = fahrenheit.base_value ;
+    base_shift = 0. ;
+    higher_units = [] ;
+    lower_units = []
+  }
+
+let romer = {
+    system_id = "romer" ;
+    system_kind = Temperature ;
+    base_notation = direct_notation ["°Rø"; "°R"] ;
+    base_value = kelvin.base_value *. 40. /. 21. ;
+    base_shift = 135.90 ;
+    higher_units = [] ;
+    lower_units = []
+  }
+
 let french_thermostat = {
     system_id = "fr-thermostat" ;
     system_kind = Temperature ;
@@ -523,7 +576,8 @@ let all_systems =
   let m =
     PMap.add Mass [
         usual_mass ;
-        metric_mass
+        metric_mass ;
+        imperial_mass
       ] m in
   let m =
     PMap.add Length [
@@ -549,7 +603,11 @@ let all_systems =
         kelvin ;
         french_thermostat ;
         german_thermostat ;
-        gas_mark
+        gas_mark ;
+        reaumur ;
+        leyden ;
+        rankine ;
+        romer
       ] m in
   m
 

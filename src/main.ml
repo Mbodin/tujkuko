@@ -151,6 +151,8 @@ let main =
             let (unit_interaction, update_units) =
               let (interaction, update) =
                 IO.createControlableListInput
+                  (* TODO: Add a shift-up and shift-down options to be able to display another unit,
+                     using [Units.(in/de)crease_unit_value]. *)
                   (List.map (fun s ->
                     let u = Units.get_base_unit s in
                     (Units.system_name s, Some (Units.print u), s)) unit_systems) in
