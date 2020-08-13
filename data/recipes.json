@@ -1,0 +1,122 @@
+{
+	"recipes": [
+		{
+			"id": "test-A",
+			"description": {
+				"en": ["test A"],
+				"eo": ["provo A"],
+				"fr": ["test A"]
+			},
+			"hints": {
+				"en": [["test: hint"], ["test: hint2", " with more text"]],
+				"eo": [["provo: indiko"], ["provo: indiko2", " kun plia teksto"]],
+				"fr": [["test: conseil"], ["test: conseil2", " avec plus de texte"]]
+			},
+			"next": [
+				{
+					"id": "test-C",
+					"description": {
+						"en": ["test C"],
+						"eo": ["provo C"],
+						"fr": ["test C"]
+					},
+					"hints": {},
+					"next": "end"
+				},
+				{
+					"id": "only-en",
+					"description": {
+						"en": ["test only en"]
+					},
+					"hints": {
+						"en": [["hint only en"]]
+					},
+					"next": []
+				},
+				{
+					"id": "only-eo",
+					"description": {
+						"eo": ["provo nur eo"]
+					},
+					"hints": {
+						"eo": [["konsilo nur eo"]]
+					},
+					"next": []
+				},
+				{
+					"id": "only-fr",
+					"description": {
+						"fr": ["test seulement fr"]
+					},
+					"hints": {
+						"fr": [["conseil seulement fr"]]
+					},
+					"next": []
+				},
+				{
+					"id": "test-D",
+					"description": {
+						"en": ["test D"],
+						"eo": ["provo D"],
+						"fr": ["test D"]
+					},
+					"hints": {},
+					"next": "end"
+				}
+			]
+		},
+		{
+			"id": "test-B",
+			"description": {
+				"en": ["test B"],
+				"eo": ["provo B"],
+				"fr": ["test B"]
+			},
+			"hints": {},
+			"next": [
+				{
+					"id": "unit-test",
+					"description": {
+						"en": [
+							"length:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": {"correlation": "root", "value": 3}, "unit": true, "notation": "mm"},
+							"mass:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": {"correlation": "exp", "value": 1}, "unit": true, "notation": "g"},
+							"volume:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": {"correlation": "exp", "value": 1}, "unit": true, "notation": "ℓ"},
+							"temperature:", {"kind": "unit", "min": 150.0, "max": 200.0, "correlation": "const", "unit": true, "notation": "°C"},
+							"time:", {"kind": "unit", "min": 1200.0, "max": 1500.0, "correlation": "const", "unit": true, "notation": "s"},
+							"unitless:", {"kind": "unit", "min": 3.0, "max": 15.0, "correlation": {"correlation": "exp", "value": 1}, "unit": false}
+						],
+						"eo": [
+							"longeco:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": {"correlation": "root", "value": 3}, "unit": true, "notation": "mm"},
+							"maso:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": {"correlation": "exp", "value": 1}, "unit": true, "notation": "g"},
+							"volumo:", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": {"correlation": "exp", "value": 1}, "unit": true, "notation": "ℓ"},
+							"temperaturo:", {"kind": "unit", "min": 150.0, "max": 200.0, "correlation": "const", "unit": true, "notation": "°C"},
+							"tempo:", {"kind": "unit", "min": 1200.0, "max": 1500.0, "correlation": "const", "unit": true, "notation": "s"},
+							"senunua:", {"kind": "unit", "min": 3.0, "max": 15.0, "correlation": {"correlation": "exp", "value": 1}, "unit": false}
+						],
+						"fr": [
+							"longueur :", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": {"correlation": "root", "value": 3}, "unit": true, "notation": "mm"},
+							"masse :", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": {"correlation": "exp", "value": 1}, "unit": true, "notation": "g"},
+							"volume :", {"kind": "unit", "min": 1.0, "max": 3.0, "correlation": {"correlation": "exp", "value": 1}, "unit": true, "notation": "ℓ"},
+							"temperature :", {"kind": "unit", "min": 150.0, "max": 200.0, "correlation": "const", "unit": true, "notation": "°C"},
+							"temps :", {"kind": "unit", "min": 1200.0, "max": 1500.0, "correlation": "const", "unit": true, "notation": "s"},
+							"sans unité :", {"kind": "unit", "min": 3.5, "max": 15.0, "correlation": {"correlation": "exp", "value": 1}, "unit": false}
+						]
+					},
+					"hints": {},
+					"next": "end"
+				},
+				{
+					"id": "test-end",
+					"description": {
+						"en": ["test end"],
+						"eo": ["provfino"],
+						"fr": ["fin de test"]
+					},
+					"hints": {},
+					"next": "end"
+				}
+			]
+		}
+	]
+}
+
